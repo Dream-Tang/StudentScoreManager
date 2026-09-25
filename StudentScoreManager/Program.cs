@@ -10,6 +10,8 @@ namespace StudentScoreManager
         [STAThread]
         static void Main()
         {
+            // 开启系统 DPI 感知（推荐）
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
             // 启用应用程序的视觉样式（WinForms 标准配置）
             Application.EnableVisualStyles();
 

@@ -1,3 +1,4 @@
+using StudentScoreManager.Models;
 using StudentScoreManager.Services;
 
 namespace StudentScoreManager
@@ -84,7 +85,7 @@ namespace StudentScoreManager
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     // 直接调用已注入好依赖的导入服务
-                    var result = _importService.ImportAll(openFileDialog.FileName, overwriteExisting:chkOverwrite.Checked);
+                    var result = _importService.ImportAll(openFileDialog.FileName, overwriteExisting: chkOverwrite.Checked);
 
                     if (result.IsSuccess)
                     {
@@ -98,6 +99,72 @@ namespace StudentScoreManager
                 }
             }
         }
-    }
 
+        private void BtnConfirmExport_Click(object sender, EventArgs e)
+        {
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx",
+                FileName = $"导出报表_{DateTime.Now:yyyyMMdd}.xlsx"
+            };
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // 1. 从 UI 控件收集筛选条件
+                    var studentFilter = new StudentExportFilter
+                    {
+                        ClassName = cmbClass.SelectedItem?.ToString(), // 如果选的是"全部"，这里可能是 null 或 empty
+                        Keyword = txtStudentKeyword.Text
+                    };
+
+                    // 处理"全部"的情况
+                    if (studentFilter.ClassName == "全部") studentFilter.ClassName = null;
+
+                    var logFilter = new TeachingLogExportFilter
+                    {
+                        ClassName = cmbLogClass.SelectedItem?.ToString(),
+                        CourseName = txtCourseKeyword.Text,
+                        StartDate = dpStartDate.Value,
+                        EndDate = dpEndDate.Value
+                    };
+
+                    if (logFilter.ClassName == "全部") logFilter.ClassName = null;
+
+                    // 2. 调用服务
+                    var exportService = new ExportService(_dbHelper);
+
+                    // 显示加载状态
+                    //this.IsEnabled = false;
+
+                    bool success = exportService.ExportAllToExcel(
+                        saveFileDialog.FileName,
+                        classFilter: null, // 班级暂时不筛选
+                        studentFilter: studentFilter,
+                        logFilter: logFilter
+                    );
+
+                    if (success)
+                    {
+                        MessageBox.Show("导出成功！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"导出失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    //this.IsEnabled = true;
+                }
+            }
+        }
+
+        private void btnStartUse_Click(object sender, EventArgs e)
+        {
+            Form f1 = new Forms.Form1();
+            f1.Show();
+        }
+    }
 }

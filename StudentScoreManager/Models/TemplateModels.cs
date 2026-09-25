@@ -1,6 +1,6 @@
 ﻿// 文件: Models/TemplateModels.cs
 
-namespace StudentScoreSystem.Models
+namespace StudentScoreManager.Models
 {
     /// <summary>
     /// 班级管理表模板

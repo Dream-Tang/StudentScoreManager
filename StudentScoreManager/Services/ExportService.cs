@@ -55,8 +55,12 @@ namespace StudentScoreManager.Services
                     throw new Exception("没有符合筛选条件的数据可导出。");
                 }
 
-                MiniExcel.SaveAs(filePath, data);
+                MiniExcel.SaveAs(filePath, data, overwriteFile:true);
                 return true;
+            }
+            catch (IOException)
+            {
+                throw new Exception("导出失败：目标文件正在被 Excel 打开，请先关闭该文件后再试。");
             }
             catch (Exception ex)
             {
@@ -71,7 +75,7 @@ namespace StudentScoreManager.Services
             var list = new List<Dictionary<string, object>>();
 
             // 基础 SQL
-            StringBuilder sqlBuilder = new StringBuilder("SELECT ClassName as 班级名称, Counselor as 辅导员, StudentCount as 人数 FROM Classes WHERE 1=1");
+            StringBuilder sqlBuilder = new StringBuilder("SELECT ClassName as 班级名称, Counselor as 辅导员, StudentCount as 班级人数 FROM Classes WHERE 1=1");
             var parameters = new Dictionary<string, object>();
 
             // 动态添加条件
@@ -117,7 +121,7 @@ namespace StudentScoreManager.Services
             var list = new List<Dictionary<string, object>>();
 
             StringBuilder sqlBuilder = new StringBuilder(
-                "SELECT ClassName as 班级, CourseName as 课程, TeachingDate as 日期, TeachingContent as 教学内容, Classroom as 教室, TeachingHours as 课时 " +
+                "SELECT ClassName as 班级名称, CourseName as 课程名称, TeachingDate as 授课日期, TeachingContent as 教学内容, Classroom as 教室, TeachingHours as 节次 " +
                 "FROM TeachingLogs WHERE 1=1");
 
             var parameters = new Dictionary<string, object>();

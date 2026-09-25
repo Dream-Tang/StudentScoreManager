@@ -34,7 +34,7 @@ namespace StudentScoreManager.Services
                     ClassName = "25电子2班",
                     CourseCode = "CS101",
                     CourseName = "C#程序设计",
-                    TeachingDate = "2026-09-10",
+                    TeachingDate = new DateTime(2026, 9, 10),
                     TeachingContent = "WinForms 基础",
                     Classroom = "A栋101",
                     TeachingHours = "一、二"

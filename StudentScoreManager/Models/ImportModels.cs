@@ -67,7 +67,7 @@ namespace StudentScoreManager.Models
         public string? CourseName { get; set; }
 
         [ExcelColumnName("授课日期")]
-        public string? TeachingDate { get; set; }
+        public DateTime? TeachingDate { get; set; }
 
         [ExcelColumnName("节次")]
         public string? TeachingHours { get; set; }

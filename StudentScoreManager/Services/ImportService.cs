@@ -3,6 +3,8 @@
 using Microsoft.Data.Sqlite;
 using MiniExcelLibs;
 using StudentScoreManager.Models;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Transactions;
 
 namespace StudentScoreManager.Services
@@ -51,10 +53,10 @@ namespace StudentScoreManager.Services
                 {
                     // 3. 读取 Excel 数据到内存
                     // 使用强类型模型读取 Excel 数据
-                    var classes     = MiniExcel.Query<ClassImportModel>(filePath, sheetName: "班级管理").ToList();
-                    var students    = MiniExcel.Query<StudentImportModel>(filePath, sheetName: "学生信息").ToList();
-                    var logs        = MiniExcel.Query<TeachingLogImportModel>(filePath, sheetName: "教学日志").ToList();
-                    var rules       = MiniExcel.Query<ScoreRuleImportModel>(filePath, sheetName: "评分规则").ToList();
+                    var classes = MiniExcel.Query<ClassImportModel>(filePath, sheetName: "班级管理").ToList();
+                    var students = MiniExcel.Query<StudentImportModel>(filePath, sheetName: "学生信息").ToList();
+                    var logs = MiniExcel.Query<TeachingLogImportModel>(filePath, sheetName: "教学日志").ToList();
+                    var rules = MiniExcel.Query<ScoreRuleImportModel>(filePath, sheetName: "评分规则").ToList();
 
                     // 按照外键依赖顺序执行导入
                     // 注意：将 overwriteExisting 参数传递下去
@@ -392,7 +394,7 @@ namespace StudentScoreManager.Services
                             "INSERT INTO ScoringRules (RuleName, MaxScore, Weight, SortOrder) VALUES (@RuleName, @MaxScore, @Weight, @SortOrder)",
                             new { RuleName = ruleName, MaxScore = row.MaxScore, Weight = row.Weight, SortOrder = row.SortOrder });
                     }
-                 }
+                }
                 catch (SqliteException sqlEx) when (sqlEx.Message.Contains("UNIQUE constraint failed"))
                 {
                     result.AddError($"[评分规则] 第 {rowIndex} 行：维度 '{row.RuleName}' 数据库已存在（唯一约束冲突）。");
@@ -406,6 +408,37 @@ namespace StudentScoreManager.Services
                     rowIndex++;
                 }
             }
+        }
+
+        // 把 Excel 里读出来的任意日期形态清洗成统一 ISO 字符串
+        private static string NormalizeTeachingDate(TeachingLogImportModel row)
+        {
+            var raw = row.TeachingDate;
+            // 情况0：MiniExcel 直接给了 DateTime 对象，最干净
+            if (raw is DateTime dt)
+                return dt.ToString("yyyy-MM-dd");
+
+            string s = raw?.ToString()?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(s))
+                throw new Exception("授课日期不能为空");
+
+            // 情况1：正常 ISO / 斜杠日期（2026-09-25、2026/9/25 0:00:00）直接能解析
+            if (DateTime.TryParse(s, CultureInfo.InvariantCulture,
+                                  DateTimeStyles.None, out DateTime d1))
+                return d1.ToString("yyyy-MM-dd");
+
+            // 情况2：混进了「星期四」等中文星期名，用正则抓出最前面的 年/月/日 数字段
+            // 匹配 2026/9/10 或 2026-9-10（月、日允许1~2位）
+            var m = Regex.Match(s, @"(\d{4})");
+            if (m.Success)
+            {
+                int y = int.Parse(m.Groups[1].Value);
+                int mo = int.Parse(m.Groups[2].Value);
+                int dd = int.Parse(m.Groups[3].Value);
+                return new DateTime(y, mo, dd).ToString("yyyy-MM-dd");
+            }
+
+            throw new Exception($"授课日期 '{s}' 格式不正确，无法解析出年月日");
         }
 
         /// <summary>
@@ -425,7 +458,7 @@ namespace StudentScoreManager.Services
                 {
                     string className = row.ClassName?.ToString()?.Trim() ?? string.Empty;
                     string courseName = row.CourseName?.ToString()?.Trim() ?? string.Empty;
-                    string teachingDate = row.TeachingDate?.ToString()?.Trim() ?? string.Empty;
+                    string teachingDate = NormalizeTeachingDate(row);// 使用标准化函数处理授课日期
 
                     if (string.IsNullOrWhiteSpace(className) && string.IsNullOrWhiteSpace(courseName))
                     {
@@ -435,23 +468,19 @@ namespace StudentScoreManager.Services
 
                     if (string.IsNullOrWhiteSpace(className)) throw new Exception("班级不能为空");
                     if (string.IsNullOrWhiteSpace(courseName)) throw new Exception("课程名称不能为空");
-                    if (string.IsNullOrWhiteSpace(teachingDate)) throw new Exception("授课日期不能为空");
 
                     if (!classIdMap.TryGetValue(className, out int classId))
                         throw new Exception($"关联班级 '{className}' 不存在");
 
-                    //if (!DateTime.TryParse(teachingDate, out _))
-                    //    throw new Exception($"授课日期 '{teachingDate}' 格式不正确，请使用 YYYY-MM-DD 格式");
-
                     // 可选字段：使用 ?? string.Empty 确保即使 Excel 单元格为空，也不会向数据库传入 null
-                    string courseCode       = row.CourseCode?.ToString()?.Trim() ?? string.Empty;
-                    string teachingContent  = row.TeachingContent?.ToString()?.Trim() ?? string.Empty;
-                    string classroom        = row.Classroom?.ToString()?.Trim() ?? string.Empty;
+                    string courseCode = row.CourseCode?.ToString()?.Trim() ?? string.Empty;
+                    string teachingContent = row.TeachingContent?.ToString()?.Trim() ?? string.Empty;
+                    string classroom = row.Classroom?.ToString()?.Trim() ?? string.Empty;
 
                     string teachingHours = string.Empty;
                     if (row.TeachingHours != null)
                     {
-                        teachingHours = row.TeachingHours.ToString()?.Trim() ?? string.Empty    ;
+                        teachingHours = row.TeachingHours.ToString()?.Trim() ?? string.Empty;
                     }
 
                     // 教学日志的覆盖逻辑：假设由 ClassName, CourseName, TeachingDate 组成唯一业务键
