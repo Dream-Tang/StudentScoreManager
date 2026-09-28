@@ -1,4 +1,5 @@
-﻿using MiniExcelLibs;
+﻿
+using MiniExcelLibs;
 using Microsoft.Data.Sqlite;
 using StudentScoreManager.Models;
 using System.Text;
@@ -46,16 +47,25 @@ namespace StudentScoreManager.Services
                 if (logs.Any())
                     data["教学日志"] = logs;
 
-                // 4. 评分规则通常不需要筛选，直接全量导出或根据业务需求决定
-                // var rules = GetScoringRules();
-                // data["评分规则"] = rules;
+                // 4. 评分规则不参与筛选，全量导出。补上该 Sheet 后，
+                //     "导出→修改→再导入" 回环时 ImportAll 才能按固定表名读到「评分规则」。
+                var rules = GetScoringRules();
+                if (rules.Any())
+                    data["评分规则"] = rules;
+
+                // 5. 成绩明细（ScoreDetails）通过外键 LogID 关联教学日志：
+                //    只导出「本次教学日志筛选范围」命中的日志所对应的成绩明细，
+                //    不再整表全量导出。范围由 logFilter 决定，与教学日志 Sheet 严格一致。
+                var details = GetScoreDetails(logFilter);
+                if (details.Any())
+                    data["成绩明细"] = details;
 
                 if (!data.Any())
                 {
                     throw new Exception("没有符合筛选条件的数据可导出。");
                 }
 
-                MiniExcel.SaveAs(filePath, data, overwriteFile:true);
+                MiniExcel.SaveAs(filePath, data, overwriteFile: true);
                 return true;
             }
             catch (IOException)
@@ -116,14 +126,15 @@ namespace StudentScoreManager.Services
             return list;
         }
 
-        private List<Dictionary<string, object>> GetTeachingLogs(TeachingLogExportFilter? filter)
+        /// <summary>
+        /// 构造教学日志的筛选 WHERE 片段与参数。
+        /// 单一事实源：GetTeachingLogs（导出日志本身）与 GetScoreDetails（按日志范围过滤明细）
+        /// 都复用此方法，保证"成绩明细范围"与"教学日志范围"逐字一致。
+        /// 返回的 WHERE 以 " WHERE 1=1 ..." 开头，参数键与占位符一致。
+        /// </summary>
+        private (string whereClause, Dictionary<string, object> parameters) BuildLogFilter(TeachingLogExportFilter? filter)
         {
-            var list = new List<Dictionary<string, object>>();
-
-            StringBuilder sqlBuilder = new StringBuilder(
-                "SELECT ClassName as 班级名称, CourseName as 课程名称, TeachingDate as 授课日期, TeachingContent as 教学内容, Classroom as 教室, TeachingHours as 节次 " +
-                "FROM TeachingLogs WHERE 1=1");
-
+            StringBuilder sqlBuilder = new StringBuilder(" WHERE 1=1");
             var parameters = new Dictionary<string, object>();
 
             if (!string.IsNullOrWhiteSpace(filter?.ClassName))
@@ -140,17 +151,78 @@ namespace StudentScoreManager.Services
 
             if (filter?.StartDate.HasValue == true)
             {
-                sqlBuilder.Append(" AND TeachingDate >= @StartDate");
+                sqlBuilder.Append(" AND date(TeachingDate) >= date(@StartDate)");
                 parameters.Add("@StartDate", filter.StartDate.Value.ToString("yyyy-MM-dd"));
             }
 
             if (filter?.EndDate.HasValue == true)
             {
-                sqlBuilder.Append(" AND TeachingDate <= @EndDate");
+                sqlBuilder.Append(" AND date(TeachingDate) <= date(@EndDate)");
                 parameters.Add("@EndDate", filter.EndDate.Value.ToString("yyyy-MM-dd"));
             }
 
+            return (sqlBuilder.ToString(), parameters);
+        }
+
+        private List<Dictionary<string, object>> GetTeachingLogs(TeachingLogExportFilter? filter)
+        {
+            var list = new List<Dictionary<string, object>>();
+
+            var (whereClause, parameters) = BuildLogFilter(filter);
+
+            StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT ClassName as 班级名称, CourseCode as 课程代码, CourseName as 课程名称, TeachingDate as 授课日期, TeachingContent as 教学内容, Classroom as 教室, TeachingHours as 节次 " +
+                "FROM TeachingLogs");
+            sqlBuilder.Append(whereClause);
             sqlBuilder.Append(" ORDER BY TeachingDate DESC");
+
+            ExecuteQuery(sqlBuilder.ToString(), parameters, list);
+            return list;
+        }
+
+        private List<Dictionary<string, object>> GetScoringRules()
+        {
+            var list = new List<Dictionary<string, object>>();
+
+            // 表头与导入模板（评分规则 Sheet）保持一致，保证导出文件可被 ImportAll 直接回读。
+            StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT RuleName as 评分维度, MaxScore as 最高评分, Weight as 权重, SortOrder as 排序 FROM ScoringRules WHERE 1=1");
+            var parameters = new Dictionary<string, object>();
+
+            sqlBuilder.Append(" ORDER BY SortOrder");
+            ExecuteQuery(sqlBuilder.ToString(), parameters, list);
+            return list;
+        }
+
+        /// <summary>
+        /// 导出成绩明细（ScoreDetails）。范围由教学日志筛选（logFilter）决定：
+        /// ScoreDetails.LogID 是关联 TeachingLogs.LogID 的外键，因此用子查询
+        ///   LogID IN (SELECT LogID FROM TeachingLogs <与教学日志完全相同的筛选>)
+        /// 只导出落在本次日志范围内的明细，不再整表全量导出。
+        /// 采用 SELECT * 动态取列：导出表头即数据库真实列名，配合导入侧通用回写实现无损回环。
+        /// 兼容处理：若历史库中不存在 ScoreDetails 表，返回空列表而不抛异常，避免拖垮整个导出。
+        /// </summary>
+        private List<Dictionary<string, object>> GetScoreDetails(TeachingLogExportFilter? logFilter)
+        {
+            var list = new List<Dictionary<string, object>>();
+
+            // 先探测表是否存在（不同版本库可能没有 ScoreDetails 表）
+            using (var probe = _dbHelper.CreateConnection())
+            {
+                probe.Open();
+                using var cmd = probe.CreateCommand();
+                cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='ScoreDetails'";
+                var exists = Convert.ToInt32(cmd.ExecuteScalar());
+                if (exists == 0) return list;
+            }
+
+            // 复用与教学日志完全一致的筛选条件，通过外键 LogID 把明细限定在日志范围内。
+            var (whereClause, parameters) = BuildLogFilter(logFilter);
+
+            var sqlBuilder = new StringBuilder(
+                "SELECT * FROM ScoreDetails WHERE LogID IN (SELECT LogID FROM TeachingLogs");
+            sqlBuilder.Append(whereClause);
+            sqlBuilder.Append(")");
 
             ExecuteQuery(sqlBuilder.ToString(), parameters, list);
             return list;

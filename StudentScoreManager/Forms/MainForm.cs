@@ -1,4 +1,6 @@
 
+
+using Microsoft.Data.Sqlite;
 using StudentScoreManager.Models;
 using StudentScoreManager.Services;
 
@@ -32,6 +34,11 @@ namespace StudentScoreManager
 
                 // 3. 初始化导入服务（将 DbHelper 注入）
                 _importService = new ImportService(_dbHelper);
+
+                // 4. 从数据库动态加载班级下拉（学生导出/日志导出两个筛选框），随数据变化自动更新
+                PopulateClassFilter(cmbClass);
+                PopulateClassFilter(cmbLogClass);
+                PopulateCourseFilter(cmbCourse);
 
                 MessageBox.Show("系统初始化完成，数据库已就绪。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -126,6 +133,11 @@ namespace StudentScoreManager
             {
                 try
                 {
+                    // 0. 导出前刷新班级下拉，动态适配本次运行中新导入的班级
+                    PopulateClassFilter(cmbClass);
+                    PopulateClassFilter(cmbLogClass);
+                    PopulateCourseFilter(cmbCourse);
+
                     // 1. 从 UI 控件收集筛选条件
                     var studentFilter = new StudentExportFilter
                     {
@@ -139,12 +151,13 @@ namespace StudentScoreManager
                     var logFilter = new TeachingLogExportFilter
                     {
                         ClassName = cmbLogClass.SelectedItem?.ToString(),
-                        CourseName = txtCourseKeyword.Text,
-                        StartDate = dpStartDate.Value,
-                        EndDate = dpEndDate.Value
+                        CourseName = cmbCourse.SelectedItem?.ToString(),
+                        StartDate = dpStartDate.Checked ? dpStartDate.Value : (DateTime?)null,
+                        EndDate = dpEndDate.Checked ? dpEndDate.Value : (DateTime?)null
                     };
 
                     if (logFilter.ClassName == "全部") logFilter.ClassName = null;
+                    if (logFilter.CourseName == "全部") logFilter.CourseName = null;
 
                     // 2. 调用服务
                     var exportService = new ExportService(_dbHelper);
@@ -173,6 +186,85 @@ namespace StudentScoreManager
                     //this.IsEnabled = true;
                 }
             }
+        }
+
+        /// <summary>
+        /// 从数据库 Classes 表动态加载班级列表到指定筛选下拉框。
+        /// 首个固定项为"全部"（不参与筛选）；其余为库内 DISTINCT 班级名，按名称排序。
+        /// 每次调用会清空重建，并尽量保留用户此前的选择；若原选项已不存在则回落到"全部"。
+        /// 强制 DropDown 为 DropDownList，避免手动输入库中不存在的班级。
+        /// </summary>
+        private void PopulateClassFilter(ComboBox cmb)
+        {
+            string? current = cmb.SelectedItem?.ToString();
+
+            cmb.BeginUpdate();
+            cmb.Items.Clear();
+            cmb.Items.Add("全部");
+            try
+            {
+                using var conn = _dbHelper.CreateConnection();
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT DISTINCT ClassName FROM Classes " +
+                                  "WHERE ClassName IS NOT NULL AND ClassName <> '' ORDER BY ClassName";
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    cmb.Items.Add(reader.GetString(0));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"加载班级列表失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                cmb.EndUpdate();
+            }
+
+            // 恢复选择：原选项仍在则选中它，否则回落到"全部"(索引 0)
+            int idx = (current != null) ? cmb.Items.IndexOf(current) : -1;
+            cmb.SelectedIndex = idx >= 0 ? idx : 0;
+            cmb.DropDownStyle = ComboBoxStyle.DropDownList;
+        }
+
+        /// <summary>
+        /// 从数据库 TeachingLogs 表动态加载已存在的课程名到指定筛选下拉框。
+        /// 首个固定项为"全部"（不参与筛选）；其余为库内 DISTINCT 课程名，按名称排序。
+        /// 每次调用清空重建并尽量保留用户此前的选择；原选项已不存在则回落到"全部"。
+        /// 强制 DropDownList，避免手动输入库中不存在的课程名。
+        /// </summary>
+        private void PopulateCourseFilter(ComboBox cmb)
+        {
+            string? current = cmb.SelectedItem?.ToString();
+            cmb.BeginUpdate();
+            cmb.Items.Clear();
+            cmb.Items.Add("全部");
+            try
+            {
+                using var conn = _dbHelper.CreateConnection();
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT DISTINCT CourseName FROM TeachingLogs " +
+                                  "WHERE CourseName IS NOT NULL AND CourseName <> '' ORDER BY CourseName";
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    cmb.Items.Add(reader.GetString(0));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"加载课程列表失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                cmb.EndUpdate();
+            }
+            int idx = (current != null) ? cmb.Items.IndexOf(current) : -1;
+            cmb.SelectedIndex = idx >= 0 ? idx : 0;
+            cmb.DropDownStyle = ComboBoxStyle.DropDownList;
         }
 
         private void btnStartUse_Click(object sender, EventArgs e)

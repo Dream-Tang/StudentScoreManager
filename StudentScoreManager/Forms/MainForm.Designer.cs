@@ -1,4 +1,5 @@
-﻿namespace StudentScoreManager
+﻿
+namespace StudentScoreManager
 {
     partial class MainForm
     {
@@ -34,24 +35,24 @@
             chkOverwrite = new CheckBox();
             BtnConfirmExport = new Button();
             tabControl1 = new TabControl();
-            学生导出设置 = new TabPage();
+            studentsPage = new TabPage();
             label4 = new Label();
             label3 = new Label();
             txtStudentKeyword = new TextBox();
             cmbClass = new ComboBox();
-            tabPage2 = new TabPage();
+            teachingLogPage = new TabPage();
             label6 = new Label();
             label5 = new Label();
             label2 = new Label();
             label1 = new Label();
-            txtCourseKeyword = new TextBox();
+            cmbCourse = new ComboBox();
             cmbLogClass = new ComboBox();
             dpEndDate = new DateTimePicker();
             dpStartDate = new DateTimePicker();
             btnStartUse = new Button();
             tabControl1.SuspendLayout();
-            学生导出设置.SuspendLayout();
-            tabPage2.SuspendLayout();
+            studentsPage.SuspendLayout();
+            teachingLogPage.SuspendLayout();
             SuspendLayout();
             // 
             // btnImportExcel
@@ -63,6 +64,16 @@
             btnImportExcel.Text = "导入excel数据";
             btnImportExcel.UseVisualStyleBackColor = true;
             btnImportExcel.Click += btnImportExcel_Click;
+            // 
+            // btnCleanupDuplicates
+            // 
+            btnCleanupDuplicates.Location = new Point(21, 260);
+            btnCleanupDuplicates.Name = "btnCleanupDuplicates";
+            btnCleanupDuplicates.Size = new Size(245, 80);
+            btnCleanupDuplicates.TabIndex = 6;
+            btnCleanupDuplicates.Text = "清理重复教学日志";
+            btnCleanupDuplicates.UseVisualStyleBackColor = true;
+            btnCleanupDuplicates.Click += btnCleanupDuplicates_Click;
             // 
             // btnDownloadTemplate
             // 
@@ -98,27 +109,27 @@
             // 
             // tabControl1
             // 
-            tabControl1.Controls.Add(学生导出设置);
-            tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(studentsPage);
+            tabControl1.Controls.Add(teachingLogPage);
             tabControl1.Location = new Point(429, 32);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(600, 326);
             tabControl1.TabIndex = 4;
             // 
-            // 学生导出设置
+            // studentsPage
             // 
-            学生导出设置.Controls.Add(label4);
-            学生导出设置.Controls.Add(label3);
-            学生导出设置.Controls.Add(txtStudentKeyword);
-            学生导出设置.Controls.Add(cmbClass);
-            学生导出设置.Location = new Point(4, 33);
-            学生导出设置.Name = "学生导出设置";
-            学生导出设置.Padding = new Padding(3);
-            学生导出设置.Size = new Size(592, 289);
-            学生导出设置.TabIndex = 0;
-            学生导出设置.Text = "学生导出设置";
-            学生导出设置.UseVisualStyleBackColor = true;
+            studentsPage.Controls.Add(label4);
+            studentsPage.Controls.Add(label3);
+            studentsPage.Controls.Add(txtStudentKeyword);
+            studentsPage.Controls.Add(cmbClass);
+            studentsPage.Location = new Point(4, 33);
+            studentsPage.Name = "studentsPage";
+            studentsPage.Padding = new Padding(3);
+            studentsPage.Size = new Size(592, 289);
+            studentsPage.TabIndex = 0;
+            studentsPage.Text = "学生导出设置";
+            studentsPage.UseVisualStyleBackColor = true;
             // 
             // label4
             // 
@@ -155,32 +166,32 @@
             cmbClass.TabIndex = 0;
             cmbClass.Text = "全部";
             // 
-            // tabPage2
+            // teachingLogPage
             // 
-            tabPage2.Controls.Add(label6);
-            tabPage2.Controls.Add(label5);
-            tabPage2.Controls.Add(label2);
-            tabPage2.Controls.Add(label1);
-            tabPage2.Controls.Add(txtCourseKeyword);
-            tabPage2.Controls.Add(cmbLogClass);
-            tabPage2.Controls.Add(dpEndDate);
-            tabPage2.Controls.Add(dpStartDate);
-            tabPage2.Location = new Point(4, 33);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(592, 289);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "日志导出设置";
-            tabPage2.UseVisualStyleBackColor = true;
+            teachingLogPage.Controls.Add(label6);
+            teachingLogPage.Controls.Add(label5);
+            teachingLogPage.Controls.Add(label2);
+            teachingLogPage.Controls.Add(label1);
+            teachingLogPage.Controls.Add(cmbCourse);
+            teachingLogPage.Controls.Add(cmbLogClass);
+            teachingLogPage.Controls.Add(dpEndDate);
+            teachingLogPage.Controls.Add(dpStartDate);
+            teachingLogPage.Location = new Point(4, 33);
+            teachingLogPage.Name = "teachingLogPage";
+            teachingLogPage.Padding = new Padding(3);
+            teachingLogPage.Size = new Size(592, 289);
+            teachingLogPage.TabIndex = 1;
+            teachingLogPage.Text = "日志导出设置";
+            teachingLogPage.UseVisualStyleBackColor = true;
             // 
             // label6
             // 
             label6.AutoSize = true;
             label6.Location = new Point(223, 188);
             label6.Name = "label6";
-            label6.Size = new Size(136, 24);
+            label6.Size = new Size(82, 24);
             label6.TabIndex = 7;
-            label6.Text = "课程名称关键词";
+            label6.Text = "课程名称";
             // 
             // label5
             // 
@@ -209,12 +220,14 @@
             label1.TabIndex = 4;
             label1.Text = "开始时间";
             // 
-            // txtCourseKeyword
+            // cmbCourse
             // 
-            txtCourseKeyword.Location = new Point(388, 182);
-            txtCourseKeyword.Name = "txtCourseKeyword";
-            txtCourseKeyword.Size = new Size(165, 30);
-            txtCourseKeyword.TabIndex = 3;
+            cmbCourse.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbCourse.Items.AddRange(new object[] { "全部" });
+            cmbCourse.Location = new Point(388, 182);
+            cmbCourse.Name = "cmbCourse";
+            cmbCourse.Size = new Size(165, 32);
+            cmbCourse.TabIndex = 3;
             // 
             // cmbLogClass
             // 
@@ -230,13 +243,17 @@
             // 
             dpEndDate.Location = new Point(307, 71);
             dpEndDate.Name = "dpEndDate";
+            dpEndDate.ShowCheckBox = true;
             dpEndDate.Size = new Size(257, 30);
             dpEndDate.TabIndex = 1;
+            dpEndDate.Value = new DateTime(2026, 9, 28, 0, 0, 0, 0);
             // 
             // dpStartDate
             // 
+            dpStartDate.Checked = false;
             dpStartDate.Location = new Point(307, 17);
             dpStartDate.Name = "dpStartDate";
+            dpStartDate.ShowCheckBox = true;
             dpStartDate.Size = new Size(257, 30);
             dpStartDate.TabIndex = 0;
             // 
@@ -249,16 +266,6 @@
             btnStartUse.Text = "开始记分";
             btnStartUse.UseVisualStyleBackColor = true;
             btnStartUse.Click += btnStartUse_Click;
-            // 
-            // btnCleanupDuplicates
-            // 
-            btnCleanupDuplicates.Location = new Point(21, 260);
-            btnCleanupDuplicates.Name = "btnCleanupDuplicates";
-            btnCleanupDuplicates.Size = new Size(245, 80);
-            btnCleanupDuplicates.TabIndex = 6;
-            btnCleanupDuplicates.Text = "清理重复教学日志";
-            btnCleanupDuplicates.UseVisualStyleBackColor = true;
-            btnCleanupDuplicates.Click += btnCleanupDuplicates_Click;
             // 
             // MainForm
             // 
@@ -276,10 +283,10 @@
             Text = "Form1";
             Load += MainForm_Load;
             tabControl1.ResumeLayout(false);
-            学生导出设置.ResumeLayout(false);
-            学生导出设置.PerformLayout();
-            tabPage2.ResumeLayout(false);
-            tabPage2.PerformLayout();
+            studentsPage.ResumeLayout(false);
+            studentsPage.PerformLayout();
+            teachingLogPage.ResumeLayout(false);
+            teachingLogPage.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -292,13 +299,12 @@
         private Button btnStartUse;
         private Button btnCleanupDuplicates;
         private TabControl tabControl1;
-        private TabPage tabPage1;
-        private TabPage tabPage2;
+        private TabPage teachingLogPage;
         private Button BtnConfirmExport;
-        private TabPage 学生导出设置;
+        private TabPage studentsPage;
         private TextBox txtStudentKeyword;
         private ComboBox cmbClass;
-        private TextBox txtCourseKeyword;
+        private ComboBox cmbCourse;
         private ComboBox cmbLogClass;
         private DateTimePicker dpEndDate;
         private DateTimePicker dpStartDate;
