@@ -41,8 +41,7 @@ namespace StudentScoreManager.Services
                                         FOREIGN KEY (ClassName) REFERENCES Classes(ClassName))";
                 // 3. 创建评分规则表
                 string sqlRules = @"CREATE TABLE IF NOT EXISTS ScoringRules (
-                                        RuleID INTEGER PRIMARY KEY AUTOINCREMENT,
-                                        RuleName TEXT NOT NULL,
+                                        RuleName TEXT NOT NULL PRIMARY KEY,
                                         MaxScore REAL NOT NULL,
                                         Weight REAL NOT NULL,
                                         SortOrder INTEGER DEFAULT 0)";

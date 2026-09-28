@@ -1,4 +1,5 @@
-﻿namespace StudentScoreManager.Forms
+﻿
+namespace StudentScoreManager.Forms
 {
     partial class Form1
     {
@@ -41,15 +42,10 @@
             ClassRoom = new DataGridViewTextBoxColumn();
             TeachingContent = new DataGridViewTextBoxColumn();
             dgvScoreDetail = new DataGridView();
-            StudentNo = new DataGridViewTextBoxColumn();
-            StudentID = new DataGridViewTextBoxColumn();
-            StudentName = new DataGridViewTextBoxColumn();
-            Rule1 = new DataGridViewComboBoxColumn();
-            Rule2 = new DataGridViewTextBoxColumn();
-            Rule3 = new DataGridViewTextBoxColumn();
             button2 = new Button();
             button3 = new Button();
             button4 = new Button();
+            button5 = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvLogInfo).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dgvScoreDetail).BeginInit();
             SuspendLayout();
@@ -117,6 +113,7 @@
             // CourseName
             // 
             CourseName.HeaderText = "课程名称";
+            CourseName.DataPropertyName = "CourseName";
             CourseName.MinimumWidth = 8;
             CourseName.Name = "CourseName";
             CourseName.Width = 150;
@@ -124,6 +121,7 @@
             // teachingHours
             // 
             teachingHours.HeaderText = "节次";
+            teachingHours.DataPropertyName = "TeachingHours";
             teachingHours.MinimumWidth = 8;
             teachingHours.Name = "teachingHours";
             teachingHours.Width = 150;
@@ -131,6 +129,7 @@
             // ClasssName
             // 
             ClasssName.HeaderText = "班级名称";
+            ClasssName.DataPropertyName = "ClassName";
             ClasssName.MinimumWidth = 8;
             ClasssName.Name = "ClasssName";
             ClasssName.Width = 150;
@@ -138,6 +137,7 @@
             // ClassRoom
             // 
             ClassRoom.HeaderText = "教室";
+            ClassRoom.DataPropertyName = "Classroom";
             ClassRoom.MinimumWidth = 8;
             ClassRoom.Name = "ClassRoom";
             ClassRoom.Width = 150;
@@ -145,6 +145,7 @@
             // TeachingContent
             // 
             TeachingContent.HeaderText = "教学内容";
+            TeachingContent.DataPropertyName = "Content";
             TeachingContent.MinimumWidth = 8;
             TeachingContent.Name = "TeachingContent";
             TeachingContent.Width = 150;
@@ -152,61 +153,12 @@
             // dgvScoreDetail
             // 
             dgvScoreDetail.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvScoreDetail.Columns.AddRange(new DataGridViewColumn[] { StudentNo, StudentID, StudentName, Rule1, Rule2, Rule3 });
             dgvScoreDetail.Location = new Point(25, 237);
             dgvScoreDetail.Name = "dgvScoreDetail";
             dgvScoreDetail.RowHeadersVisible = false;
             dgvScoreDetail.RowHeadersWidth = 62;
             dgvScoreDetail.Size = new Size(1222, 601);
             dgvScoreDetail.TabIndex = 6;
-            // 
-            // StudentNo
-            // 
-            StudentNo.HeaderText = "序号";
-            StudentNo.MinimumWidth = 8;
-            StudentNo.Name = "StudentNo";
-            StudentNo.ReadOnly = true;
-            StudentNo.Width = 150;
-            // 
-            // StudentID
-            // 
-            StudentID.HeaderText = "学号";
-            StudentID.MinimumWidth = 8;
-            StudentID.Name = "StudentID";
-            StudentID.ReadOnly = true;
-            StudentID.Width = 150;
-            // 
-            // StudentName
-            // 
-            StudentName.HeaderText = "姓名";
-            StudentName.MinimumWidth = 8;
-            StudentName.Name = "StudentName";
-            StudentName.ReadOnly = true;
-            StudentName.Width = 150;
-            // 
-            // Rule1
-            // 
-            Rule1.HeaderText = "考勤";
-            Rule1.Items.AddRange(new object[] { "到", "迟到", "请假", "公假", "早退", "缺勤" });
-            Rule1.MinimumWidth = 8;
-            Rule1.Name = "Rule1";
-            Rule1.Resizable = DataGridViewTriState.True;
-            Rule1.SortMode = DataGridViewColumnSortMode.Automatic;
-            Rule1.Width = 150;
-            // 
-            // Rule2
-            // 
-            Rule2.HeaderText = "纪律";
-            Rule2.MinimumWidth = 8;
-            Rule2.Name = "Rule2";
-            Rule2.Width = 150;
-            // 
-            // Rule3
-            // 
-            Rule3.HeaderText = "质量";
-            Rule3.MinimumWidth = 8;
-            Rule3.Name = "Rule3";
-            Rule3.Width = 150;
             // 
             // button2
             // 
@@ -235,11 +187,21 @@
             button4.Text = "清除选定行";
             button4.UseVisualStyleBackColor = true;
             // 
+            // button5
+            // 
+            button5.Location = new Point(303, 205);
+            button5.Name = "button5";
+            button5.Size = new Size(136, 34);
+            button5.TabIndex = 10;
+            button5.Text = "评分映射设置";
+            button5.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1305, 890);
+            Controls.Add(button5);
             Controls.Add(button4);
             Controls.Add(button3);
             Controls.Add(button2);
@@ -251,7 +213,7 @@
             Controls.Add(label1);
             Controls.Add(dtpTeachingDate);
             Name = "Form1";
-            Text = "Form1";
+            Text = "课堂评分";
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)dgvLogInfo).EndInit();
             ((System.ComponentModel.ISupportInitialize)dgvScoreDetail).EndInit();
@@ -277,11 +239,6 @@
         private Button button2;
         private Button button3;
         private Button button4;
-        private DataGridViewTextBoxColumn StudentNo;
-        private DataGridViewTextBoxColumn StudentID;
-        private DataGridViewTextBoxColumn StudentName;
-        private DataGridViewComboBoxColumn Rule1;
-        private DataGridViewTextBoxColumn Rule2;
-        private DataGridViewTextBoxColumn Rule3;
+        private Button button5;
     }
 }

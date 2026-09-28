@@ -88,8 +88,6 @@ namespace StudentScoreManager
             // chkOverwrite
             // 
             chkOverwrite.AutoSize = true;
-            chkOverwrite.Checked = true;
-            chkOverwrite.CheckState = CheckState.Checked;
             chkOverwrite.Location = new Point(292, 178);
             chkOverwrite.Name = "chkOverwrite";
             chkOverwrite.Size = new Size(108, 28);

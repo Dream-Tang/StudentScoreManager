@@ -26,7 +26,7 @@ namespace StudentScoreManager
             try
             {
                 // 1. 全局唯一实例化 DbHelper（请确保路径正确）
-                _dbHelper = new DbHelper("scores.db");
+                _dbHelper = new DbHelper(AppConfig.DbPath);
 
                 // 2. 初始化数据库表结构
                 var dbInitializer = new DatabaseInitializer(_dbHelper);
