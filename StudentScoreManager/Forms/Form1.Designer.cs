@@ -96,7 +96,7 @@
             // 
             // button1
             // 
-            button1.Location = new Point(479, 97);
+            button1.Location = new Point(25, 205);
             button1.Name = "button1";
             button1.Size = new Size(112, 34);
             button1.TabIndex = 4;
@@ -107,11 +107,11 @@
             // 
             dgvLogInfo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvLogInfo.Columns.AddRange(new DataGridViewColumn[] { CourseName, teachingHours, ClasssName, ClassRoom, TeachingContent });
-            dgvLogInfo.Location = new Point(25, 150);
+            dgvLogInfo.Location = new Point(471, 18);
             dgvLogInfo.Name = "dgvLogInfo";
             dgvLogInfo.RowHeadersVisible = false;
             dgvLogInfo.RowHeadersWidth = 62;
-            dgvLogInfo.Size = new Size(1143, 98);
+            dgvLogInfo.Size = new Size(776, 201);
             dgvLogInfo.TabIndex = 5;
             // 
             // CourseName
@@ -153,11 +153,11 @@
             // 
             dgvScoreDetail.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvScoreDetail.Columns.AddRange(new DataGridViewColumn[] { StudentNo, StudentID, StudentName, Rule1, Rule2, Rule3 });
-            dgvScoreDetail.Location = new Point(25, 272);
+            dgvScoreDetail.Location = new Point(25, 237);
             dgvScoreDetail.Name = "dgvScoreDetail";
             dgvScoreDetail.RowHeadersVisible = false;
             dgvScoreDetail.RowHeadersWidth = 62;
-            dgvScoreDetail.Size = new Size(1143, 606);
+            dgvScoreDetail.Size = new Size(1222, 601);
             dgvScoreDetail.TabIndex = 6;
             // 
             // StudentNo
@@ -210,7 +210,7 @@
             // 
             // button2
             // 
-            button2.Location = new Point(899, 99);
+            button2.Location = new Point(303, 165);
             button2.Name = "button2";
             button2.Size = new Size(112, 34);
             button2.TabIndex = 7;
@@ -219,7 +219,7 @@
             // 
             // button3
             // 
-            button3.Location = new Point(755, 50);
+            button3.Location = new Point(25, 165);
             button3.Name = "button3";
             button3.Size = new Size(112, 34);
             button3.TabIndex = 8;
@@ -228,7 +228,7 @@
             // 
             // button4
             // 
-            button4.Location = new Point(755, 97);
+            button4.Location = new Point(162, 165);
             button4.Name = "button4";
             button4.Size = new Size(112, 34);
             button4.TabIndex = 9;

@@ -1,5 +1,5 @@
-﻿// 文件路径: Services/DbHelper.cs
-
+﻿
+// 文件路径: Services/DbHelper.cs
 using Microsoft.Data.Sqlite;
 using System.Reflection;
 
@@ -12,6 +12,8 @@ namespace StudentScoreManager.Services
     public class DbHelper
     {
         // 数据库连接字符串（私有只读字段，确保线程安全）
+        // 说明：外键约束(PRAGMA foreign_keys)保持 SQLite 默认关闭，连接串不追加 Foreign Keys=True，
+        //       以避免历史脏数据/导入顺序问题在写入时报错，提升使用友好度。
         private readonly string _connectionString;
 
         /// <summary>
@@ -34,20 +36,29 @@ namespace StudentScoreManager.Services
         /// </summary>
         /// <param name="sql">参数化的 SQL 语句</param>
         /// <param name="param">匿名对象参数（例如：new { Name = "Test" }），内部通过反射映射为 SQL 参数</param>
+        /// <param name="conn">可选：外部持有的连接。传入时命令挂到该连接上（不再自建/开关连接），用于把多条写库纳入同一连接/事务。</param>
+        /// <param name="trans">可选：外部持有的事务。仅在同时传入 conn 时生效。</param>
         /// <returns>受影响的数据库行数</returns>
-        public int ExecuteNonQuery(string sql, object? param = null)
+        public int ExecuteNonQuery(string sql, object? param = null,
+                                   SqliteConnection? conn = null, SqliteTransaction? trans = null)
         {
-            using var connection = new SqliteConnection(_connectionString);
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-
-            if (param != null)
+            // 情况一：调用方传入连接（事务边界由调用方持有）——不新建、不开关连接
+            if (conn != null)
             {
-                BindParameters(command, param);
+                using var command = conn.CreateCommand();
+                command.CommandText = sql;
+                if (trans != null) command.Transaction = trans;
+                if (param != null) BindParameters(command, param);
+                return command.ExecuteNonQuery();
             }
 
+            // 情况二：无事务场景（只读查询/单条写）——保留原有"自建短连接"行为
+            using var connection = new SqliteConnection(_connectionString);
+            using var command2 = connection.CreateCommand();
+            command2.CommandText = sql;
+            if (param != null) BindParameters(command2, param);
             connection.Open();
-            return command.ExecuteNonQuery();
+            return command2.ExecuteNonQuery();
         }
 
         /// <summary>
@@ -57,20 +68,33 @@ namespace StudentScoreManager.Services
         /// <typeparam name="T">期望返回的数据类型</typeparam>
         /// <param name="sql">参数化的 SQL 语句</param>
         /// <param name="param">匿名对象参数</param>
+        /// <param name="conn">可选：外部持有的连接。传入时命令挂到该连接上（不再自建/开关连接）。</param>
+        /// <param name="trans">可选：外部持有的事务。仅在同时传入 conn 时生效。</param>
         /// <returns>转换后的查询结果，若为空则返回类型的默认值</returns>
-        public T ExecuteScalar<T>(string sql, object? param = null)
+        public T ExecuteScalar<T>(string sql, object? param = null,
+                                  SqliteConnection? conn = null, SqliteTransaction? trans = null)
         {
-            using var connection = new SqliteConnection(_connectionString);
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
+            object? result;
 
-            if (param != null)
+            // 情况一：使用调用方传入的连接（与 INSERT 同连接 → last_insert_rowid() 才返回真实值）
+            if (conn != null)
             {
-                BindParameters(command, param);
+                using var command = conn.CreateCommand();
+                command.CommandText = sql;
+                if (trans != null) command.Transaction = trans;
+                if (param != null) BindParameters(command, param);
+                result = command.ExecuteScalar();
             }
-
-            connection.Open();
-            var result = command.ExecuteScalar();
+            else
+            {
+                // 情况二：自建短连接（只读查询等无事务场景）
+                using var connection = new SqliteConnection(_connectionString);
+                using var command2 = connection.CreateCommand();
+                command2.CommandText = sql;
+                if (param != null) BindParameters(command2, param);
+                connection.Open();
+                result = command2.ExecuteScalar();
+            }
 
             // 1. 首先处理数据库返回的空值
             if (result == null || result == DBNull.Value)
@@ -102,11 +126,9 @@ namespace StudentScoreManager.Services
             {
                 var value = prop.GetValue(param);
                 var parameter = command.CreateParameter();
-
                 // 约定：属性名必须与 SQL 中的参数名一致（如 @ClassName）
                 parameter.ParameterName = $"@{prop.Name}";
                 parameter.Value = value ?? DBNull.Value; // 将 C# 的 null 转换为数据库的 DBNull
-
                 command.Parameters.Add(parameter);
             }
         }

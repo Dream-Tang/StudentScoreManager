@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             btnImportExcel = new Button();
+            btnCleanupDuplicates = new Button();
             btnDownloadTemplate = new Button();
             chkOverwrite = new CheckBox();
             BtnConfirmExport = new Button();
@@ -249,11 +250,22 @@
             btnStartUse.UseVisualStyleBackColor = true;
             btnStartUse.Click += btnStartUse_Click;
             // 
+            // btnCleanupDuplicates
+            // 
+            btnCleanupDuplicates.Location = new Point(21, 260);
+            btnCleanupDuplicates.Name = "btnCleanupDuplicates";
+            btnCleanupDuplicates.Size = new Size(245, 80);
+            btnCleanupDuplicates.TabIndex = 6;
+            btnCleanupDuplicates.Text = "清理重复教学日志";
+            btnCleanupDuplicates.UseVisualStyleBackColor = true;
+            btnCleanupDuplicates.Click += btnCleanupDuplicates_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1105, 556);
+            Controls.Add(btnCleanupDuplicates);
             Controls.Add(btnStartUse);
             Controls.Add(tabControl1);
             Controls.Add(BtnConfirmExport);
@@ -278,6 +290,7 @@
         private Button btnDownloadTemplate;
         private CheckBox chkOverwrite;
         private Button btnStartUse;
+        private Button btnCleanupDuplicates;
         private TabControl tabControl1;
         private TabPage tabPage1;
         private TabPage tabPage2;
