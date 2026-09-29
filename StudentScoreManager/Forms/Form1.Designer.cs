@@ -1,4 +1,5 @@
 ﻿
+
 namespace StudentScoreManager.Forms
 {
     partial class Form1
@@ -37,7 +38,7 @@ namespace StudentScoreManager.Forms
             btnRefresh = new Krypton.Toolkit.KryptonButton();
             btnMappingEditor = new Krypton.Toolkit.KryptonButton();
             splitMain = new SplitContainer();
-            flpCourses = new FlowLayoutPanel();
+            flpCourses = new DoubleBufferedFlowLayoutPanel();
             dgvScoreDetail = new DataGridView();
             pnlHeader = new Krypton.Toolkit.KryptonPanel();
             lblCourseTitle = new Label();
@@ -61,9 +62,8 @@ namespace StudentScoreManager.Forms
             // 
             // kryptonManager1
             // 
-            // 换肤总开关。请在设计器里选中它，把 GlobalPaletteMode 设为
-            // Office2019 White / Spring2015White 等即可全站换主题。
-            // 这里刻意不写死枚举值：不同 Krypton.Toolkit 版本枚举名有差异，写死会编译报错。
+            kryptonManager1.ToolkitStrings.MessageBoxStrings.LessDetails = "L&ess Details...";
+            kryptonManager1.ToolkitStrings.MessageBoxStrings.MoreDetails = "&More Details...";
             // 
             // pnlTop
             // 
@@ -74,44 +74,46 @@ namespace StudentScoreManager.Forms
             pnlTop.Dock = DockStyle.Top;
             pnlTop.Location = new Point(0, 0);
             pnlTop.Name = "pnlTop";
-            pnlTop.Size = new Size(1280, 68);
+            pnlTop.Size = new Size(1247, 68);
             pnlTop.TabIndex = 0;
             // 
             // lblDate
             // 
             lblDate.Location = new Point(20, 22);
             lblDate.Name = "lblDate";
-            lblDate.Size = new Size(80, 30);
+            lblDate.Size = new Size(90, 29);
             lblDate.TabIndex = 0;
             lblDate.Values.Text = "授课日期";
             // 
             // dtpDate
             // 
-            dtpDate.CalendarFont = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Regular, GraphicsUnit.Point);
+            dtpDate.CalendarFont = new Font("Microsoft YaHei UI", 10.5F);
             dtpDate.CustomFormat = "yyyy年MM月dd日";
-            dtpDate.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Regular, GraphicsUnit.Point);
+            dtpDate.Font = new Font("Microsoft YaHei UI", 10.5F);
             dtpDate.Format = DateTimePickerFormat.Custom;
             dtpDate.Location = new Point(106, 20);
             dtpDate.Name = "dtpDate";
-            dtpDate.Size = new Size(220, 30);
+            dtpDate.Size = new Size(220, 34);
             dtpDate.TabIndex = 1;
             // 
             // btnRefresh
             // 
             btnRefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnRefresh.Location = new Point(1000, 15);
+            btnRefresh.Location = new Point(967, 15);
             btnRefresh.Name = "btnRefresh";
             btnRefresh.Size = new Size(120, 40);
             btnRefresh.TabIndex = 2;
+            btnRefresh.Values.DropDownArrowColor = Color.Empty;
             btnRefresh.Values.Text = "刷新";
             // 
             // btnMappingEditor
             // 
             btnMappingEditor.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnMappingEditor.Location = new Point(1136, 15);
+            btnMappingEditor.Location = new Point(1103, 15);
             btnMappingEditor.Name = "btnMappingEditor";
             btnMappingEditor.Size = new Size(124, 40);
             btnMappingEditor.TabIndex = 3;
+            btnMappingEditor.Values.DropDownArrowColor = Color.Empty;
             btnMappingEditor.Values.Text = "评分映射设置";
             // 
             // splitMain
@@ -134,7 +136,7 @@ namespace StudentScoreManager.Forms
             splitMain.Panel2.Controls.Add(pnlActions);
             splitMain.Panel2.Padding = new Padding(8, 8, 10, 8);
             splitMain.Panel2MinSize = 520;
-            splitMain.Size = new Size(1280, 692);
+            splitMain.Size = new Size(1247, 952);
             splitMain.SplitterDistance = 336;
             splitMain.SplitterWidth = 8;
             splitMain.TabIndex = 1;
@@ -147,9 +149,10 @@ namespace StudentScoreManager.Forms
             flpCourses.Location = new Point(10, 8);
             flpCourses.Name = "flpCourses";
             flpCourses.Padding = new Padding(2, 2, 2, 8);
-            flpCourses.Size = new Size(322, 676);
+            flpCourses.Size = new Size(322, 936);
             flpCourses.TabIndex = 0;
-            flpCourses.WrapContents = false;            // 
+            flpCourses.WrapContents = false;
+            // 
             // dgvScoreDetail
             // 
             dgvScoreDetail.AllowUserToDeleteRows = false;
@@ -159,7 +162,7 @@ namespace StudentScoreManager.Forms
             dgvScoreDetail.Name = "dgvScoreDetail";
             dgvScoreDetail.RowHeadersVisible = false;
             dgvScoreDetail.RowHeadersWidth = 62;
-            dgvScoreDetail.Size = new Size(918, 552);
+            dgvScoreDetail.Size = new Size(885, 812);
             dgvScoreDetail.TabIndex = 2;
             // 
             // pnlHeader
@@ -169,7 +172,7 @@ namespace StudentScoreManager.Forms
             pnlHeader.Dock = DockStyle.Top;
             pnlHeader.Location = new Point(8, 8);
             pnlHeader.Name = "pnlHeader";
-            pnlHeader.Size = new Size(918, 56);
+            pnlHeader.Size = new Size(885, 56);
             pnlHeader.TabIndex = 0;
             // 
             // lblCourseTitle
@@ -177,14 +180,14 @@ namespace StudentScoreManager.Forms
             lblCourseTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lblCourseTitle.Location = new Point(12, 14);
             lblCourseTitle.Name = "lblCourseTitle";
-            lblCourseTitle.Size = new Size(560, 30);
+            lblCourseTitle.Size = new Size(527, 30);
             lblCourseTitle.TabIndex = 0;
             lblCourseTitle.Text = "请选择左侧课程";
             // 
             // lblSaveState
             // 
             lblSaveState.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            lblSaveState.Location = new Point(796, 14);
+            lblSaveState.Location = new Point(763, 14);
             lblSaveState.Name = "lblSaveState";
             lblSaveState.Size = new Size(110, 30);
             lblSaveState.TabIndex = 1;
@@ -196,43 +199,46 @@ namespace StudentScoreManager.Forms
             pnlActions.Controls.Add(btnClear);
             pnlActions.Controls.Add(btnSave);
             pnlActions.Dock = DockStyle.Bottom;
-            pnlActions.Location = new Point(8, 616);
+            pnlActions.Location = new Point(8, 876);
             pnlActions.Name = "pnlActions";
-            pnlActions.Size = new Size(918, 68);
+            pnlActions.Size = new Size(885, 68);
             pnlActions.TabIndex = 1;
             // 
             // btnPresent
             // 
             btnPresent.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnPresent.Location = new Point(530, 14);
+            btnPresent.Location = new Point(497, 14);
             btnPresent.Name = "btnPresent";
             btnPresent.Size = new Size(120, 40);
             btnPresent.TabIndex = 0;
+            btnPresent.Values.DropDownArrowColor = Color.Empty;
             btnPresent.Values.Text = "全部出勤";
             // 
             // btnClear
             // 
             btnClear.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClear.Location = new Point(660, 14);
+            btnClear.Location = new Point(627, 14);
             btnClear.Name = "btnClear";
             btnClear.Size = new Size(120, 40);
             btnClear.TabIndex = 1;
+            btnClear.Values.DropDownArrowColor = Color.Empty;
             btnClear.Values.Text = "清除选定行";
             // 
             // btnSave
             // 
             btnSave.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnSave.Location = new Point(790, 14);
+            btnSave.Location = new Point(757, 14);
             btnSave.Name = "btnSave";
             btnSave.Size = new Size(120, 40);
             btnSave.TabIndex = 2;
+            btnSave.Values.DropDownArrowColor = Color.Empty;
             btnSave.Values.Text = "保存评分";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1280, 760);
+            ClientSize = new Size(1247, 1020);
             Controls.Add(splitMain);
             Controls.Add(pnlTop);
             MinimumSize = new Size(1080, 700);
@@ -243,14 +249,13 @@ namespace StudentScoreManager.Forms
             ((System.ComponentModel.ISupportInitialize)pnlTop).EndInit();
             pnlTop.ResumeLayout(false);
             pnlTop.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)splitMain).EndInit();
             splitMain.Panel1.ResumeLayout(false);
             splitMain.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitMain).EndInit();
             splitMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvScoreDetail).EndInit();
             ((System.ComponentModel.ISupportInitialize)pnlHeader).EndInit();
             pnlHeader.ResumeLayout(false);
-            pnlHeader.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pnlActions).EndInit();
             pnlActions.ResumeLayout(false);
             ResumeLayout(false);
@@ -265,7 +270,7 @@ namespace StudentScoreManager.Forms
         private Krypton.Toolkit.KryptonButton btnRefresh;
         private Krypton.Toolkit.KryptonButton btnMappingEditor;
         private SplitContainer splitMain;
-        private FlowLayoutPanel flpCourses;
+        private DoubleBufferedFlowLayoutPanel flpCourses;
         private DataGridView dgvScoreDetail;
         private Krypton.Toolkit.KryptonPanel pnlHeader;
         private Label lblCourseTitle;

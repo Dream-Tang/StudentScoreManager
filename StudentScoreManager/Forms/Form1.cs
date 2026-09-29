@@ -1,7 +1,9 @@
 ﻿
+
 using StudentScoreManager.Models;
 using StudentScoreManager.Services;
 using System.Data;
+using System.Threading.Tasks;
 using System.Drawing.Drawing2D;
 using Krypton.Toolkit;
 
@@ -89,6 +91,45 @@ namespace StudentScoreManager.Forms
             public string Section = "";
             public CourseItem? Item;
             public string Remark = "";
+        }
+
+        // ==== 双缓冲 FlowLayoutPanel：消除卡片切换/滚动时的闪烁 ====
+        private sealed class DoubleBufferedFlowLayoutPanel : FlowLayoutPanel
+        {
+            public DoubleBufferedFlowLayoutPanel()
+            {
+                SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
+            }
+        }
+
+        // ==== 异步加载：评分规则定义 + 一次刷表所需的数据快照 ====
+        private sealed class RuleDef
+        {
+            public string RuleName = "";
+            public double MaxScore = 100;
+            public Dictionary<string, double> OptionMap = new();
+        }
+        private sealed class GridData
+        {
+            public List<RuleDef> Rules = new();
+            public List<(string Sid, string Name)> Students = new();
+            public Dictionary<(string, string), double> Saved = new();
+        }
+
+        // 异步刷表并发令牌：只应用最后一次切换结果，丢弃过期回调
+        private int _loadToken;
+
+        /// <summary>卡片只创建一次（5 张固定节次），之后一律 SetCard 复用，避免重建触发重排。</summary>
+        private void EnsureCardsBuilt()
+        {
+            if (_cards.Count > 0) return;
+            for (int i = 0; i < SectionLabels.Length; i++)
+            {
+                var card = new CourseCard();
+                card.Click += Card_Click;
+                _cards.Add(card);
+                flpCourses.Controls.Add(card);
+            }
         }
 
         public Form1()
@@ -186,6 +227,11 @@ namespace StudentScoreManager.Forms
 
             lblCourseTitle.Font = new Font("Microsoft YaHei UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
             lblCourseTitle.ForeColor = TextMain;
+
+            // 开启 DataGridView 内部双缓冲属性，消除切卡片/填表时的整表闪烁
+            typeof(DataGridView)
+                .GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                ?.SetValue(dgvScoreDetail, true);
         }
 
         // =====================================================================
@@ -244,33 +290,20 @@ namespace StudentScoreManager.Forms
         /// <summary>按日期查课，生成固定 5 个节次卡片（有课填内容，无课置灰占位），并自动选中第一个有课卡片。</summary>
         private void BuildCourseCards(DateTime date)
         {
+            var byHours = QueryCoursesByDate(date);   // 切日期本就要查；高频的"切卡片"走异步不重建
+            EnsureCardsBuilt();                        // 卡片只建一次，之后 SetCard 复用
             flpCourses.SuspendLayout();
-            foreach (Control c in flpCourses.Controls) c.Dispose();   // 卡片是动态生成的，重建前先释放
-            flpCourses.Controls.Clear();
-            _cards.Clear();
-            _currentCard = null;
-
-            var byHours = QueryCoursesByDate(date);
-
-            foreach (var label in SectionLabels)
+            for (int i = 0; i < _cards.Count; i++)
             {
-                var slot = new CourseSlot { Section = label };
-                if (byHours.TryGetValue(label, out var item))
-                {
-                    slot.Item = item;
-                    slot.Remark = item.Remark;
-                }
-                var card = new CourseCard(slot);
-                card.Click += Card_Click;
-                _cards.Add(card);
-                flpCourses.Controls.Add(card);
+                string label = SectionLabels[i];
+                byHours.TryGetValue(label, out var item);
+                _cards[i].SetCard(item, label, item?.Remark ?? "");
             }
-
             flpCourses.ResumeLayout(true);
-            LayoutCards();   // 按容器宽度重排卡片宽度
+            LayoutCards();
 
-            // 默认选中第一个有课卡片（无课卡片不参与自动选中）
-            var first = _cards.FirstOrDefault(c => HasCourse(c.Slot.Item));
+            _currentCard = null;
+            var first = _cards.FirstOrDefault(c => HasCourse(c.Course));
             if (first != null) ActivateCard(first);
             else SetSaveState(false);
         }
@@ -324,16 +357,18 @@ namespace StudentScoreManager.Forms
         {
             int w = flpCourses.ClientSize.Width - flpCourses.Padding.Horizontal - 4;
             if (w < 200) w = 200;
+            flpCourses.SuspendLayout();
             foreach (var card in _cards)
             {
                 if (card.Width != w) card.Width = w;   // 宽度变化会触发卡片重绘圆角边框
             }
+            flpCourses.ResumeLayout(false);           // 不强制立即重排，避免逐个改宽触发连环布局
         }
 
         private void Card_Click(object? sender, EventArgs e)
         {
             if (sender is not CourseCard card) return;
-            if (!HasCourse(card.Slot.Item)) return;    // 无课卡片不响应
+            if (!HasCourse(card.Course)) return;    // 无课卡片不响应
             if (card == _currentCard) return;
 
             if (!ConfirmLeaveCourse()) return;         // 有未保存内容先问清
@@ -345,14 +380,12 @@ namespace StudentScoreManager.Forms
         {
             if (_currentCard != null && _currentCard != card) _currentCard.Selected = false;
             card.Selected = true;
-            card.Invalidate();
             _currentCard = card;
-            _currentCourse = card.Slot.Item;
+            _currentCourse = card.Course;
 
-            lblCourseTitle.Text = $"{_currentCourse!.CourseName}  ·  {_currentCourse.ClassName}  ·  第{card.Slot.Section}节";
-            RefreshScoreGrid(_currentCourse);
+            lblCourseTitle.Text = $"{_currentCourse!.CourseName}  ·  {_currentCourse.ClassName}  ·  第{card.Section}节";
             SetSaveState(false);
-            dgvScoreDetail.ClearSelection();
+            RefreshScoreGridAsync(_currentCourse);
         }
 
         /// <summary>离开当前课程前的未保存拦截。返回 false 表示用户取消，调用方应放弃切换。</summary>
@@ -406,7 +439,7 @@ namespace StudentScoreManager.Forms
         // =====================================================================
 
         /// <summary>按 ScoringRules 动态生成打分组列（列标题=RuleName），有选项的规则渲染为下拉，否则数字列。</summary>
-        private void BuildScoreColumns()
+        private void BuildScoreColumns(List<RuleDef> rules)
         {
             dgvScoreDetail.Columns.Clear();
 
@@ -423,11 +456,10 @@ namespace StudentScoreManager.Forms
             dgvScoreDetail.Columns.Add(new DataGridViewTextBoxColumn { Name = COL_SID, HeaderText = "学号", Width = 140, ReadOnly = true, Tag = null });
             dgvScoreDetail.Columns.Add(new DataGridViewTextBoxColumn { Name = COL_SNAME, HeaderText = "姓名", Width = 110, ReadOnly = true, Tag = null });
 
-            // 读评分规则（按 SortOrder 排序），逐条生成一列
-            var rules = LoadScoringRules();
+            // 评分规则由后台查询阶段传入（含选项映射），此处只在 UI 线程建列
             foreach (var r in rules)
             {
-                var opts = LoadRuleOptions(r.RuleName);
+                var opts = r.OptionMap;
                 var tag = new RuleColumnTag { RuleName = r.RuleName, MaxScore = r.MaxScore };
                 if (opts.Count > 0)
                 {
@@ -483,34 +515,82 @@ namespace StudentScoreManager.Forms
             return list;
         }
 
-        /// <summary>刷新右侧学生评分明细表：建列 -> 按班级拉学生 -> 回填已存分数。整个过程屏蔽"脏"标记。</summary>
-        private void RefreshScoreGrid(CourseItem item)
+        /// <summary>
+        /// 切卡片时异步刷新右侧表：后台线程查数据，回 UI 线程填表。
+        /// 用 _loadToken 只应用最后一次切换，丢弃过期回调，避免快速点卡片错乱。
+        /// </summary>
+        private async void RefreshScoreGridAsync(CourseItem item)
+        {
+            int token = ++_loadToken;
+            GridData? data;
+            try
+            {
+                data = await Task.Run(() => LoadGridData(item));
+            }
+            catch (Exception ex)
+            {
+                if (token == _loadToken)
+                    MessageBox.Show("加载学生数据失败：" + ex.Message, "错误",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            if (token != _loadToken) return;                    // 期间又切了卡片，丢弃本次
+            if (!ReferenceEquals(_currentCourse, item)) return; // 当前已不是这节课
+            ApplyGridData(item, data!);
+        }
+
+        /// <summary>纯数据查询（后台线程执行）：评分规则+选项、班级学生、已存分数。</summary>
+        private GridData LoadGridData(CourseItem item)
+        {
+            var data = new GridData();
+            foreach (var r in LoadScoringRules())
+                data.Rules.Add(new RuleDef { RuleName = r.RuleName, MaxScore = r.MaxScore, OptionMap = LoadRuleOptions(r.RuleName) });
+
+            string sql = $"SELECT {S_StudentID}, {S_StudentName} FROM Students " +
+                         $"WHERE {S_ClassName} = @ClassName ORDER BY {S_StudentID}";
+            using (var conn = _db.CreateConnection())
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = sql;
+                cmd.Parameters.AddWithValue("@ClassName", item.ClassName);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                    data.Students.Add((reader.GetString(reader.GetOrdinal(S_StudentID)),
+                                       reader.GetString(reader.GetOrdinal(S_StudentName))));
+            }
+
+            int logId = item.LogID ?? 0;
+            string sql2 = $"SELECT {D_StudentID}, {D_RuleName}, {D_Score} FROM ScoreDetails WHERE {D_LogID} = @LogID";
+            using (var conn = _db.CreateConnection())
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = sql2;
+                cmd.Parameters.AddWithValue("@LogID", logId);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string sid = reader.GetString(0);
+                    string rule = reader.GetString(1);
+                    double score = reader.IsDBNull(2) ? 0 : reader.GetDouble(2);
+                    data.Saved[(sid, rule)] = score;
+                }
+            }
+            return data;
+        }
+
+        /// <summary>回 UI 线程把查询结果填表：建列 -> 填学生行 -> 回填分数。全程屏蔽脏标记。</summary>
+        private void ApplyGridData(CourseItem item, GridData data)
         {
             _loading = true;
             try
             {
-                BuildScoreColumns();
-
-                var students = new List<(string Sid, string Name)>();
-                string sql = $"SELECT {S_StudentID}, {S_StudentName} FROM Students " +
-                             $"WHERE {S_ClassName} = @ClassName ORDER BY {S_StudentID}";
-                using (var conn = _db.CreateConnection())
-                {
-                    conn.Open();
-                    using var cmd = conn.CreateCommand();
-                    cmd.CommandText = sql;
-                    cmd.Parameters.AddWithValue("@ClassName", item.ClassName);
-                    using var reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        students.Add((reader.GetString(reader.GetOrdinal(S_StudentID)),
-                                      reader.GetString(reader.GetOrdinal(S_StudentName))));
-                    }
-                }
-
+                BuildScoreColumns(data.Rules);
+                dgvScoreDetail.SuspendLayout();
                 dgvScoreDetail.Rows.Clear();
                 int idx = 1;
-                foreach (var st in students)
+                foreach (var st in data.Students)
                 {
                     int r = dgvScoreDetail.Rows.Add();
                     var row = dgvScoreDetail.Rows[r];
@@ -518,8 +598,8 @@ namespace StudentScoreManager.Forms
                     row.Cells[COL_SID].Value = st.Sid;
                     row.Cells[COL_SNAME].Value = st.Name;
                 }
-
-                BackfillSavedScores(item.LogID ?? 0);
+                BackfillSavedScores(data);
+                dgvScoreDetail.ResumeLayout(false);
                 dgvScoreDetail.ClearSelection();
                 if (dgvScoreDetail.Rows.Count > 0 && dgvScoreDetail.Columns.Count > 3)
                 {
@@ -534,27 +614,10 @@ namespace StudentScoreManager.Forms
         }
 
         /// <summary>回填该节课已保存过的分数：ScoreDetails 已有记录则填回表格（下拉按分值反查文本）。</summary>
-        private void BackfillSavedScores(int logId)
+        private void BackfillSavedScores(GridData data)
         {
-            // (StudentID, RuleName) -> Score
-            var saved = new Dictionary<(string, string), double>();
-            string sql = $"SELECT {D_StudentID}, {D_RuleName}, {D_Score} FROM ScoreDetails WHERE {D_LogID} = @LogID";
-            using (var conn = _db.CreateConnection())
-            {
-                conn.Open();
-                using var cmd = conn.CreateCommand();
-                cmd.CommandText = sql;
-                cmd.Parameters.AddWithValue("@LogID", logId);
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    string sid = reader.GetString(0);
-                    string rule = reader.GetString(1);
-                    double score = reader.IsDBNull(2) ? 0 : reader.GetDouble(2);
-                    saved[(sid, rule)] = score;
-                }
-            }
-
+            // (StudentID, RuleName) -> Score（数据已由后台查询阶段提供，这里只做 UI 回填）
+            var saved = data.Saved;
             foreach (DataGridViewRow row in dgvScoreDetail.Rows)
             {
                 string? sid = row.Cells[COL_SID].Value?.ToString();
@@ -826,7 +889,7 @@ namespace StudentScoreManager.Forms
             if (!ConfirmLeaveCourse()) return;
             if (HasCourse(_currentCourse))
             {
-                RefreshScoreGrid(_currentCourse!);
+                RefreshScoreGridAsync(_currentCourse!);
                 SetSaveState(false);
             }
             else
@@ -1142,7 +1205,7 @@ namespace StudentScoreManager.Forms
                 // 映射变化后，重建当前打分组列（下拉选项即时更新），并回填
                 if (HasCourse(_currentCourse))
                 {
-                    RefreshScoreGrid(_currentCourse!);
+                    RefreshScoreGridAsync(_currentCourse!);
                     SetSaveState(false);
                 }
                 MessageBox.Show($"规则[{rule}] 的映射已保存。", "成功");
@@ -1165,162 +1228,6 @@ namespace StudentScoreManager.Forms
         /// 只用 GDI+（Graphics.DrawString / MeasureString），不使用 TextRenderer，
         /// 避免其重载在不同 .NET 版本间存在差异导致的编译不一致。
         /// </summary>
-        private sealed class CourseCard : Panel
-        {
-            private const int CardHeight = 172;
-            private const int Radius = 10;
-            private const int Pad = 14;
-
-            private static readonly Font FontSection = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            private static readonly Font FontTitle = new Font("Microsoft YaHei UI", 11.5F, FontStyle.Bold, GraphicsUnit.Point);
-            private static readonly Font FontBody = new Font("Microsoft YaHei UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point);
-            private static readonly Font FontState = new Font("Microsoft YaHei UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-
-            private static readonly ToolTip Tip = new ToolTip { AutoPopDelay = 8000, InitialDelay = 400, ReshowDelay = 200 };
-
-            private bool _hover;
-
-            public CourseSlot Slot { get; }
-            public bool Selected { get; set; }
-
-            public CourseCard(CourseSlot slot)
-            {
-                Slot = slot;
-                SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint
-                         | ControlStyles.UserPaint | ControlStyles.ResizeRedraw | ControlStyles.SupportsTransparentBackColor, true);
-                Margin = new Padding(0, 0, 0, 10);
-                Size = new Size(300, CardHeight);
-                Height = CardHeight;                 // 高度固定，只让宽度跟随左侧面板
-                BackColor = Color.Transparent;
-                Enabled = HasCourse(slot.Item);
-                Cursor = Enabled ? Cursors.Hand : Cursors.Default;
-                TabStop = false;
-
-                string tip = BuildTipText();
-                if (!string.IsNullOrEmpty(tip)) Tip.SetToolTip(this, tip);
-            }
-
-            private bool HasContent => HasCourse(Slot.Item);
-
-            private string BuildTipText()
-            {
-                var it = Slot.Item;
-                if (!HasContent || it == null) return "";
-                return $"课程：{it.CourseName}\r\n班级：{it.ClassName}\r\n教室：{it.Classroom}\r\n" +
-                       $"教学内容：{it.Content}\r\n备注：{it.Remark}";
-            }
-
-            protected override void OnMouseEnter(EventArgs e) { _hover = true; Invalidate(); base.OnMouseEnter(e); }
-            protected override void OnMouseLeave(EventArgs e) { _hover = false; Invalidate(); base.OnMouseLeave(e); }
-
-            protected override void OnPaint(PaintEventArgs e)
-            {
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-
-                var it = Slot.Item;
-                bool has = HasContent;
-
-                // 卡片底 + 描边（选中=强调蓝 2px，悬停=浅蓝，常态=浅灰）
-                using (var path = Round(new RectangleF(1, 1, Width - 3, Height - 3), Radius))
-                using (var back = new SolidBrush(!has ? CardBackEmpty : (Selected ? CardBackSelected : CardBack)))
-                {
-                    g.FillPath(back, path);
-                }
-
-                Color borderColor = !has ? Color.FromArgb(232, 233, 235)
-                                  : Selected ? Accent
-                                  : _hover ? CardBorderHover : CardBorder;
-                float inset = Selected ? 2f : 1f;
-                using (var pen = new Pen(borderColor, Selected ? 2f : 1f))
-                using (var path = Round(new RectangleF(1, 1, Width - 1 - 2 * inset, Height - 1 - 2 * inset), Radius))
-                {
-                    g.DrawPath(pen, path);
-                }
-
-                // 顶部：节次徽标（左） + 课程代码（右）
-                int top = 12;
-                string section = $"第 {Slot.Section} 节";
-                SizeF secSize = g.MeasureString(section, FontSection);
-                var badge = new RectangleF(Pad, top, secSize.Width + 14, 22);
-                Color badgeBack = has ? Color.FromArgb(226, 240, 253) : Color.FromArgb(238, 239, 241);
-                Color badgeFore = has ? Accent : TextDisabled;
-                using (var bp = Round(badge, 6))
-                using (var bb = new SolidBrush(badgeBack)) g.FillPath(bb, bp);
-                DrawText(g, section, FontSection, badge, badgeFore, StringAlignment.Near);
-
-                string code = it?.CourseCode ?? "";
-                if (!string.IsNullOrEmpty(code))
-                {
-                    SizeF cs = g.MeasureString(code, FontState);
-                    var cr = new RectangleF(Width - Pad - cs.Width, top + 3, cs.Width + 2, cs.Height);
-                    DrawText(g, code, FontState, cr, has ? TextMuted : TextDisabled, StringAlignment.Far);
-                }
-
-                // 课程名称 / 无课占位标题
-                int y = top + 32;
-                string title = has ? (it!.CourseName ?? "") : "本节无课程";
-                DrawText(g, title, FontTitle,
-                    new RectangleF(Pad, y, Width - Pad * 2, 26),
-                    has ? TextMain : TextDisabled, StringAlignment.Near);
-
-                // 明细：班级 / 教室 / 内容 / 备注
-                y += 30;
-                int lh = 22;
-                DrawRow(g, ref y, lh, "班级", has ? it!.ClassName : "");
-                DrawRow(g, ref y, lh, "教室", has ? it!.Classroom : "");
-                DrawRow(g, ref y, lh, "内容", has ? it!.Content : "");
-                DrawRow(g, ref y, lh, "备注", has ? Slot.Remark : "");
-
-                if (!has)
-                {
-                    DrawText(g, "本节无课程", FontState,
-                        new RectangleF(Pad, Height - 28, Width - Pad * 2, 18),
-                        TextDisabled, StringAlignment.Near);
-                }
-            }
-
-            private void DrawRow(Graphics g, ref int y, int lh, string key, string val)
-            {
-                DrawText(g, key, FontBody, new RectangleF(Pad, y, 48, lh), TextMuted, StringAlignment.Near);
-                string text = string.IsNullOrEmpty(val) ? "-" : val;
-                var rect = new RectangleF(Pad + 48, y, Width - Pad - 48 - Pad, lh);
-                DrawText(g, text, FontBody, rect, HasContent ? TextMain : TextDisabled, StringAlignment.Near);
-                y += lh;
-            }
-
-            /// <summary>统一绘制：垂直居中 + 超宽省略号 + 关闭前缀符（& 不解释为助记键）。</summary>
-            private static void DrawText(Graphics g, string text, Font font, RectangleF rect, Color color, StringAlignment align)
-            {
-                if (string.IsNullOrEmpty(text)) return;
-                using var sf = new StringFormat();
-                sf.Trimming = StringTrimming.EllipsisCharacter;
-                sf.LineAlignment = StringAlignment.Center;
-                sf.Alignment = align;
-                using var brush = new SolidBrush(color);
-                g.DrawString(text, font, brush, rect, sf);
-            }
-
-            private static GraphicsPath Round(RectangleF r, float radius)
-            {
-                float d = radius * 2f;
-                var p = new GraphicsPath();
-                if (d <= 0f || d > r.Width || d > r.Height)
-                {
-                    p.AddRectangle(r);
-                    p.CloseFigure();
-                    return p;
-                }
-                p.AddArc(r.X, r.Y, d, d, 180, 90);
-                p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
-                p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
-                p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
-                p.CloseFigure();
-                return p;
-            }
-        }
-
         private readonly List<CourseCard> _cards = new();
     }
 }

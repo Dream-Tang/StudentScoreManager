@@ -40,7 +40,7 @@ namespace StudentScoreManager
                 PopulateClassFilter(cmbLogClass);
                 PopulateCourseFilter(cmbCourse);
 
-                MessageBox.Show("系统初始化完成，数据库已就绪。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("系统初始化完成，数据库已就绪。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
