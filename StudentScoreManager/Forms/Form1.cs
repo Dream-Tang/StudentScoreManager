@@ -24,7 +24,6 @@ namespace StudentScoreManager.Forms
         private const string S_ClassName = "ClassName";
 
         // ==== 评分明细表列名（纵向长表：每人每维度一行）====
-        private const string D_DetailID = "DetailID";
         private const string D_LogID = "LogID";
         private const string D_StudentID = "StudentID";
         private const string D_RuleName = "RuleName";
@@ -40,7 +39,7 @@ namespace StudentScoreManager.Forms
         private const string COL_SNAME = "colSName";   // 姓名
 
         /// <summary>规则列的元信息，挂在 DataGridViewColumn.Tag 上，用于保存/校验/回填时区分规则。</summary>
-        private sealed class RuleColumnTag
+        private sealed class RuleColumnTag // sealed类不可继承，避免外部误用
         {
             public string RuleName = "";
             public double MaxScore = 100;
@@ -555,7 +554,7 @@ namespace StudentScoreManager.Forms
             };
 
             var lblRule = new Label { Text = "选择规则：", Left = 12, Top = 15, AutoSize = true };
-            var cmbRule = new ComboBox { Left = 100, Top = 11, Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
+            var cmbRule = new ComboBox { Left = 120, Top = 11, Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
             foreach (var r in rules) cmbRule.Items.Add(r.RuleName);
 
             var grid = new DataGridView
@@ -581,15 +580,15 @@ namespace StudentScoreManager.Forms
             }
             cmbRule.SelectedIndexChanged += (s, e) => LoadRuleToGrid();
 
-            var btnDel = new Button { Text = "删除选中行", Left = 12, Top = 310, Width = 110, Anchor = AnchorStyles.Left | AnchorStyles.Bottom };
+            var btnDel = new Button { Text = "删除选中行", Left = 12, Top = 310, Width = 110, Height = 34, Anchor = AnchorStyles.Left | AnchorStyles.Bottom };
             btnDel.Click += (s, e) =>
             {
                 var sel = grid.SelectedRows.Cast<DataGridViewRow>().Where(r => !r.IsNewRow).ToList();
                 foreach (var r in sel) grid.Rows.Remove(r);
             };
 
-            var btnOk = new Button { Text = "保存", Left = 200, Top = 310, Width = 90, Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
-            var btnCancel = new Button { Text = "关闭", Left = 306, Top = 310, Width = 90, Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
+            var btnOk = new Button { Text = "保存", Left = 200, Top = 310, Width = 90, Height =34,  Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
+            var btnCancel = new Button { Text = "关闭", Left = 306, Top = 310, Width = 90, Height = 34, Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
             btnCancel.Click += (s, e) => dlg.Close();
 
             btnOk.Click += (s, e) =>

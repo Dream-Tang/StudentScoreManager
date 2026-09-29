@@ -107,45 +107,45 @@ namespace StudentScoreManager.Forms
             dgvLogInfo.Name = "dgvLogInfo";
             dgvLogInfo.RowHeadersVisible = false;
             dgvLogInfo.RowHeadersWidth = 62;
-            dgvLogInfo.Size = new Size(776, 201);
+            dgvLogInfo.Size = new Size(776, 221);
             dgvLogInfo.TabIndex = 5;
             // 
             // CourseName
             // 
-            CourseName.HeaderText = "课程名称";
             CourseName.DataPropertyName = "CourseName";
+            CourseName.HeaderText = "课程名称";
             CourseName.MinimumWidth = 8;
             CourseName.Name = "CourseName";
             CourseName.Width = 150;
             // 
             // teachingHours
             // 
-            teachingHours.HeaderText = "节次";
             teachingHours.DataPropertyName = "TeachingHours";
+            teachingHours.HeaderText = "节次";
             teachingHours.MinimumWidth = 8;
             teachingHours.Name = "teachingHours";
             teachingHours.Width = 150;
             // 
             // ClasssName
             // 
-            ClasssName.HeaderText = "班级名称";
             ClasssName.DataPropertyName = "ClassName";
+            ClasssName.HeaderText = "班级名称";
             ClasssName.MinimumWidth = 8;
             ClasssName.Name = "ClasssName";
             ClasssName.Width = 150;
             // 
             // ClassRoom
             // 
-            ClassRoom.HeaderText = "教室";
             ClassRoom.DataPropertyName = "Classroom";
+            ClassRoom.HeaderText = "教室";
             ClassRoom.MinimumWidth = 8;
             ClassRoom.Name = "ClassRoom";
             ClassRoom.Width = 150;
             // 
             // TeachingContent
             // 
-            TeachingContent.HeaderText = "教学内容";
             TeachingContent.DataPropertyName = "Content";
+            TeachingContent.HeaderText = "教学内容";
             TeachingContent.MinimumWidth = 8;
             TeachingContent.Name = "TeachingContent";
             TeachingContent.Width = 150;
@@ -153,11 +153,11 @@ namespace StudentScoreManager.Forms
             // dgvScoreDetail
             // 
             dgvScoreDetail.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvScoreDetail.Location = new Point(25, 237);
+            dgvScoreDetail.Location = new Point(25, 265);
             dgvScoreDetail.Name = "dgvScoreDetail";
             dgvScoreDetail.RowHeadersVisible = false;
             dgvScoreDetail.RowHeadersWidth = 62;
-            dgvScoreDetail.Size = new Size(1222, 601);
+            dgvScoreDetail.Size = new Size(1222, 573);
             dgvScoreDetail.TabIndex = 6;
             // 
             // button2
