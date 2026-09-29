@@ -1,5 +1,4 @@
 ﻿
-
 namespace StudentScoreManager.Forms
 {
     partial class Form1
@@ -30,212 +29,250 @@ namespace StudentScoreManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            sqliteCommand1 = new Microsoft.Data.Sqlite.SqliteCommand();
-            dtpTeachingDate = new DateTimePicker();
-            label1 = new Label();
-            button1 = new Button();
-            dgvLogInfo = new DataGridView();
-            teachingHours = new DataGridViewTextBoxColumn();
-            CourseCode = new DataGridViewTextBoxColumn();
-            CourseName = new DataGridViewTextBoxColumn();
-            ClasssName = new DataGridViewTextBoxColumn();
-            ClassRoom = new DataGridViewTextBoxColumn();
-            TeachingContent = new DataGridViewTextBoxColumn();
+            components = new System.ComponentModel.Container();
+            kryptonManager1 = new Krypton.Toolkit.KryptonManager(components);
+            pnlTop = new Krypton.Toolkit.KryptonPanel();
+            lblDate = new Krypton.Toolkit.KryptonLabel();
+            dtpDate = new DateTimePicker();
+            btnRefresh = new Krypton.Toolkit.KryptonButton();
+            btnMappingEditor = new Krypton.Toolkit.KryptonButton();
+            splitMain = new SplitContainer();
+            flpCourses = new FlowLayoutPanel();
             dgvScoreDetail = new DataGridView();
-            button2 = new Button();
-            button3 = new Button();
-            button4 = new Button();
-            button5 = new Button();
-            ((System.ComponentModel.ISupportInitialize)dgvLogInfo).BeginInit();
+            pnlHeader = new Krypton.Toolkit.KryptonPanel();
+            lblCourseTitle = new Label();
+            lblSaveState = new Label();
+            pnlActions = new Krypton.Toolkit.KryptonPanel();
+            btnPresent = new Krypton.Toolkit.KryptonButton();
+            btnClear = new Krypton.Toolkit.KryptonButton();
+            btnSave = new Krypton.Toolkit.KryptonButton();
+            ((System.ComponentModel.ISupportInitialize)pnlTop).BeginInit();
+            pnlTop.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitMain).BeginInit();
+            splitMain.Panel1.SuspendLayout();
+            splitMain.Panel2.SuspendLayout();
+            splitMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvScoreDetail).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pnlHeader).BeginInit();
+            pnlHeader.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pnlActions).BeginInit();
+            pnlActions.SuspendLayout();
             SuspendLayout();
             // 
-            // sqliteCommand1
+            // kryptonManager1
             // 
-            sqliteCommand1.CommandTimeout = 30;
-            sqliteCommand1.Connection = null;
-            sqliteCommand1.Transaction = null;
-            sqliteCommand1.UpdatedRowSource = System.Data.UpdateRowSource.None;
+            // 换肤总开关。请在设计器里选中它，把 GlobalPaletteMode 设为
+            // Office2019 White / Spring2015White 等即可全站换主题。
+            // 这里刻意不写死枚举值：不同 Krypton.Toolkit 版本枚举名有差异，写死会编译报错。
             // 
-            // dtpTeachingDate
+            // pnlTop
             // 
-            dtpTeachingDate.CalendarFont = new Font("Microsoft YaHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            dtpTeachingDate.Font = new Font("Microsoft YaHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            dtpTeachingDate.Format = DateTimePickerFormat.Short;
-            dtpTeachingDate.Location = new Point(113, 39);
-            dtpTeachingDate.Name = "dtpTeachingDate";
-            dtpTeachingDate.Size = new Size(282, 38);
-            dtpTeachingDate.TabIndex = 0;
+            pnlTop.Controls.Add(lblDate);
+            pnlTop.Controls.Add(dtpDate);
+            pnlTop.Controls.Add(btnRefresh);
+            pnlTop.Controls.Add(btnMappingEditor);
+            pnlTop.Dock = DockStyle.Top;
+            pnlTop.Location = new Point(0, 0);
+            pnlTop.Name = "pnlTop";
+            pnlTop.Size = new Size(1280, 68);
+            pnlTop.TabIndex = 0;
             // 
-            // label1
+            // lblDate
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(25, 39);
-            label1.Name = "label1";
-            label1.Size = new Size(82, 24);
-            label1.TabIndex = 1;
-            label1.Text = "授课日期";
+            lblDate.Location = new Point(20, 22);
+            lblDate.Name = "lblDate";
+            lblDate.Size = new Size(80, 30);
+            lblDate.TabIndex = 0;
+            lblDate.Values.Text = "授课日期";
             // 
-            // button1
+            // dtpDate
             // 
-            button1.Location = new Point(474, 65);
-            button1.Name = "button1";
-            button1.Size = new Size(112, 34);
-            button1.TabIndex = 4;
-            button1.Text = "刷新";
-            button1.UseVisualStyleBackColor = true;
+            dtpDate.CalendarFont = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Regular, GraphicsUnit.Point);
+            dtpDate.CustomFormat = "yyyy年MM月dd日";
+            dtpDate.Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Regular, GraphicsUnit.Point);
+            dtpDate.Format = DateTimePickerFormat.Custom;
+            dtpDate.Location = new Point(106, 20);
+            dtpDate.Name = "dtpDate";
+            dtpDate.Size = new Size(220, 30);
+            dtpDate.TabIndex = 1;
             // 
-            // dgvLogInfo
+            // btnRefresh
             // 
-            dgvLogInfo.AllowUserToDeleteRows = false;
-            dgvLogInfo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvLogInfo.Columns.AddRange(new DataGridViewColumn[] { teachingHours, CourseCode, CourseName, ClasssName, ClassRoom, TeachingContent });
-            dgvLogInfo.Location = new Point(25, 114);
-            dgvLogInfo.Name = "dgvLogInfo";
-            dgvLogInfo.RowHeadersVisible = false;
-            dgvLogInfo.RowHeadersWidth = 62;
-            dgvLogInfo.Size = new Size(1268, 221);
-            dgvLogInfo.TabIndex = 5;
+            btnRefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnRefresh.Location = new Point(1000, 15);
+            btnRefresh.Name = "btnRefresh";
+            btnRefresh.Size = new Size(120, 40);
+            btnRefresh.TabIndex = 2;
+            btnRefresh.Values.Text = "刷新";
             // 
-            // teachingHours
+            // btnMappingEditor
             // 
-            teachingHours.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
-            teachingHours.DataPropertyName = "TeachingHours";
-            teachingHours.HeaderText = "节次";
-            teachingHours.MinimumWidth = 8;
-            teachingHours.Name = "teachingHours";
-            teachingHours.Width = 82;
+            btnMappingEditor.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnMappingEditor.Location = new Point(1136, 15);
+            btnMappingEditor.Name = "btnMappingEditor";
+            btnMappingEditor.Size = new Size(124, 40);
+            btnMappingEditor.TabIndex = 3;
+            btnMappingEditor.Values.Text = "评分映射设置";
             // 
-            // CourseCode
+            // splitMain
             // 
-            CourseCode.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            CourseCode.HeaderText = "课程编号";
-            CourseCode.MinimumWidth = 8;
-            CourseCode.Name = "CourseCode";
-            CourseCode.Width = 118;
+            splitMain.Dock = DockStyle.Fill;
+            splitMain.FixedPanel = FixedPanel.Panel1;
+            splitMain.Location = new Point(0, 68);
+            splitMain.Name = "splitMain";
             // 
-            // CourseName
+            // splitMain.Panel1
             // 
-            CourseName.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            CourseName.DataPropertyName = "CourseName";
-            CourseName.HeaderText = "课程名称";
-            CourseName.MinimumWidth = 8;
-            CourseName.Name = "CourseName";
-            CourseName.Width = 118;
+            splitMain.Panel1.Controls.Add(flpCourses);
+            splitMain.Panel1.Padding = new Padding(10, 8, 4, 8);
+            splitMain.Panel1MinSize = 260;
             // 
-            // ClasssName
+            // splitMain.Panel2
             // 
-            ClasssName.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            ClasssName.DataPropertyName = "ClassName";
-            ClasssName.HeaderText = "班级名称";
-            ClasssName.MinimumWidth = 8;
-            ClasssName.Name = "ClasssName";
-            ClasssName.Width = 118;
+            splitMain.Panel2.Controls.Add(dgvScoreDetail);
+            splitMain.Panel2.Controls.Add(pnlHeader);
+            splitMain.Panel2.Controls.Add(pnlActions);
+            splitMain.Panel2.Padding = new Padding(8, 8, 10, 8);
+            splitMain.Panel2MinSize = 520;
+            splitMain.Size = new Size(1280, 692);
+            splitMain.SplitterDistance = 336;
+            splitMain.SplitterWidth = 8;
+            splitMain.TabIndex = 1;
             // 
-            // ClassRoom
+            // flpCourses
             // 
-            ClassRoom.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            ClassRoom.DataPropertyName = "Classroom";
-            ClassRoom.HeaderText = "教室";
-            ClassRoom.MinimumWidth = 8;
-            ClassRoom.Name = "ClassRoom";
-            ClassRoom.Width = 82;
-            // 
-            // TeachingContent
-            // 
-            TeachingContent.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            TeachingContent.DataPropertyName = "Content";
-            TeachingContent.HeaderText = "教学内容";
-            TeachingContent.MinimumWidth = 8;
-            TeachingContent.Name = "TeachingContent";
-            // 
+            flpCourses.AutoScroll = true;
+            flpCourses.Dock = DockStyle.Fill;
+            flpCourses.FlowDirection = FlowDirection.TopDown;
+            flpCourses.Location = new Point(10, 8);
+            flpCourses.Name = "flpCourses";
+            flpCourses.Padding = new Padding(2, 2, 2, 8);
+            flpCourses.Size = new Size(322, 676);
+            flpCourses.TabIndex = 0;
+            flpCourses.WrapContents = false;            // 
             // dgvScoreDetail
             // 
             dgvScoreDetail.AllowUserToDeleteRows = false;
             dgvScoreDetail.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvScoreDetail.Location = new Point(25, 355);
+            dgvScoreDetail.Dock = DockStyle.Fill;
+            dgvScoreDetail.Location = new Point(8, 64);
             dgvScoreDetail.Name = "dgvScoreDetail";
             dgvScoreDetail.RowHeadersVisible = false;
             dgvScoreDetail.RowHeadersWidth = 62;
-            dgvScoreDetail.Size = new Size(1268, 483);
-            dgvScoreDetail.TabIndex = 6;
+            dgvScoreDetail.Size = new Size(918, 552);
+            dgvScoreDetail.TabIndex = 2;
             // 
-            // button2
+            // pnlHeader
             // 
-            button2.Location = new Point(767, 25);
-            button2.Name = "button2";
-            button2.Size = new Size(99, 74);
-            button2.TabIndex = 7;
-            button2.Text = "保存数据";
-            button2.UseVisualStyleBackColor = true;
+            pnlHeader.Controls.Add(lblCourseTitle);
+            pnlHeader.Controls.Add(lblSaveState);
+            pnlHeader.Dock = DockStyle.Top;
+            pnlHeader.Location = new Point(8, 8);
+            pnlHeader.Name = "pnlHeader";
+            pnlHeader.Size = new Size(918, 56);
+            pnlHeader.TabIndex = 0;
             // 
-            // button3
+            // lblCourseTitle
             // 
-            button3.Location = new Point(474, 25);
-            button3.Name = "button3";
-            button3.Size = new Size(112, 34);
-            button3.TabIndex = 8;
-            button3.Text = "全部出勤";
-            button3.UseVisualStyleBackColor = true;
+            lblCourseTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            lblCourseTitle.Location = new Point(12, 14);
+            lblCourseTitle.Name = "lblCourseTitle";
+            lblCourseTitle.Size = new Size(560, 30);
+            lblCourseTitle.TabIndex = 0;
+            lblCourseTitle.Text = "请选择左侧课程";
             // 
-            // button4
+            // lblSaveState
             // 
-            button4.Location = new Point(611, 25);
-            button4.Name = "button4";
-            button4.Size = new Size(136, 34);
-            button4.TabIndex = 9;
-            button4.Text = "清除选定行";
-            button4.UseVisualStyleBackColor = true;
+            lblSaveState.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblSaveState.Location = new Point(796, 14);
+            lblSaveState.Name = "lblSaveState";
+            lblSaveState.Size = new Size(110, 30);
+            lblSaveState.TabIndex = 1;
+            lblSaveState.Text = "● 已保存";
             // 
-            // button5
+            // pnlActions
             // 
-            button5.Location = new Point(611, 65);
-            button5.Name = "button5";
-            button5.Size = new Size(136, 34);
-            button5.TabIndex = 10;
-            button5.Text = "评分映射设置";
-            button5.UseVisualStyleBackColor = true;
+            pnlActions.Controls.Add(btnPresent);
+            pnlActions.Controls.Add(btnClear);
+            pnlActions.Controls.Add(btnSave);
+            pnlActions.Dock = DockStyle.Bottom;
+            pnlActions.Location = new Point(8, 616);
+            pnlActions.Name = "pnlActions";
+            pnlActions.Size = new Size(918, 68);
+            pnlActions.TabIndex = 1;
+            // 
+            // btnPresent
+            // 
+            btnPresent.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnPresent.Location = new Point(530, 14);
+            btnPresent.Name = "btnPresent";
+            btnPresent.Size = new Size(120, 40);
+            btnPresent.TabIndex = 0;
+            btnPresent.Values.Text = "全部出勤";
+            // 
+            // btnClear
+            // 
+            btnClear.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClear.Location = new Point(660, 14);
+            btnClear.Name = "btnClear";
+            btnClear.Size = new Size(120, 40);
+            btnClear.TabIndex = 1;
+            btnClear.Values.Text = "清除选定行";
+            // 
+            // btnSave
+            // 
+            btnSave.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnSave.Location = new Point(790, 14);
+            btnSave.Name = "btnSave";
+            btnSave.Size = new Size(120, 40);
+            btnSave.TabIndex = 2;
+            btnSave.Values.Text = "保存评分";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1305, 890);
-            Controls.Add(button5);
-            Controls.Add(button4);
-            Controls.Add(button3);
-            Controls.Add(button2);
-            Controls.Add(dgvScoreDetail);
-            Controls.Add(dgvLogInfo);
-            Controls.Add(button1);
-            Controls.Add(label1);
-            Controls.Add(dtpTeachingDate);
+            ClientSize = new Size(1280, 760);
+            Controls.Add(splitMain);
+            Controls.Add(pnlTop);
+            MinimumSize = new Size(1080, 700);
             Name = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "课堂评分";
             Load += Form1_Load;
-            ((System.ComponentModel.ISupportInitialize)dgvLogInfo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pnlTop).EndInit();
+            pnlTop.ResumeLayout(false);
+            pnlTop.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)splitMain).EndInit();
+            splitMain.Panel1.ResumeLayout(false);
+            splitMain.Panel2.ResumeLayout(false);
+            splitMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvScoreDetail).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pnlHeader).EndInit();
+            pnlHeader.ResumeLayout(false);
+            pnlHeader.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pnlActions).EndInit();
+            pnlActions.ResumeLayout(false);
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
-        private Microsoft.Data.Sqlite.SqliteCommand sqliteCommand1;
-        private DateTimePicker dtpTeachingDate;
-        private Label label1;
-        private Button button1;
-        private DataGridView dgvLogInfo;
+        private Krypton.Toolkit.KryptonManager kryptonManager1;
+        private Krypton.Toolkit.KryptonPanel pnlTop;
+        private Krypton.Toolkit.KryptonLabel lblDate;
+        private DateTimePicker dtpDate;
+        private Krypton.Toolkit.KryptonButton btnRefresh;
+        private Krypton.Toolkit.KryptonButton btnMappingEditor;
+        private SplitContainer splitMain;
+        private FlowLayoutPanel flpCourses;
         private DataGridView dgvScoreDetail;
-        private Button button2;
-        private Button button3;
-        private Button button4;
-        private Button button5;
-        private DataGridViewTextBoxColumn teachingHours;
-        private DataGridViewTextBoxColumn CourseCode;
-        private DataGridViewTextBoxColumn CourseName;
-        private DataGridViewTextBoxColumn ClasssName;
-        private DataGridViewTextBoxColumn ClassRoom;
-        private DataGridViewTextBoxColumn TeachingContent;
+        private Krypton.Toolkit.KryptonPanel pnlHeader;
+        private Label lblCourseTitle;
+        private Label lblSaveState;
+        private Krypton.Toolkit.KryptonPanel pnlActions;
+        private Krypton.Toolkit.KryptonButton btnPresent;
+        private Krypton.Toolkit.KryptonButton btnClear;
+        private Krypton.Toolkit.KryptonButton btnSave;
     }
 }

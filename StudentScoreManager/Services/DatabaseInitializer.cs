@@ -55,6 +55,7 @@ namespace StudentScoreManager.Services
                                         TeachingHours TEXT NOT NULL,
                                         TeachingContent TEXT,
                                         Classroom TEXT,
+                                        Remark TEXT,
                                         FOREIGN KEY (ClassName) REFERENCES Classes(ClassName))";
                 // 5. 创建评分明细表
                 string sqlScores = @"CREATE TABLE IF NOT EXISTS ScoreDetails (

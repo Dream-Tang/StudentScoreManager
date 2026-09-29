@@ -19,6 +19,7 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="Krypton.Toolkit" Version="105.26.7.201" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
     <PackageReference Include="MiniExcel" Version="1.46.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
