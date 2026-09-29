@@ -1,4 +1,5 @@
-﻿using StudentScoreManager.Models;
+﻿
+using StudentScoreManager.Models;
 using StudentScoreManager.Services;
 using System.Data;
 
@@ -7,6 +8,14 @@ namespace StudentScoreManager.Forms
     public partial class Form1 : Form
     {
         private readonly DbHelper _db;
+
+        // ==== 当前选中的课程（替代原 cmbCourseCode 下拉框，由 dgvLogInfo 双击行设置）====
+        private CourseItem? _currentCourse = null;
+        // dgvLogInfo 中当前高亮选中的行（用于切换选中时清除上一个高亮）
+        private DataGridViewRow? _selectedLogRow = null;
+
+        // ==== dgvLogInfo 固定 5 行的节次标签（每天 10 节课，两节一行）====
+        private static readonly string[] SectionLabels = { "一、二", "三、四", "五、六", "七、八", "九、十" };
 
         // ==== TeachingLogs 表列名 ====
         private const string T_LogID = "LogID";
@@ -63,19 +72,30 @@ namespace StudentScoreManager.Forms
             // 确保"文本选项→分值"映射表存在（首次运行内置考勤默认映射，之后由用户在对话框里自行修改）
             EnsureOptionTable();
 
-            // 上方【课程信息确认表】（只读，列已在 Designer 里设好 DataPropertyName）
+            // 上方【课程信息确认表】（只读、固定 5 行节次；列已在 Designer 里设好 DataPropertyName）
             dgvLogInfo.EnableHeadersVisualStyles = false;
             dgvLogInfo.AutoGenerateColumns = false;
             dgvLogInfo.ReadOnly = true;
             dgvLogInfo.AllowUserToAddRows = false;
+            dgvLogInfo.AllowUserToDeleteRows = false;
             dgvLogInfo.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvLogInfo.MultiSelect = false;
+            dgvLogInfo.EditMode = DataGridViewEditMode.EditProgrammatically;
 
             // 下方【学生评分明细表】（可编辑；打分组列由 BuildScoreColumns 按 ScoringRules 动态生成）
             dgvScoreDetail.EnableHeadersVisualStyles = false;
             dgvScoreDetail.AutoGenerateColumns = false; // 关掉自动建列，改由代码按规则动态建
             dgvScoreDetail.AllowUserToAddRows = false;
-            dgvScoreDetail.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvScoreDetail.RowHeadersVisible = false;
+
+            // ===== Excel 式快速填写相关设置（B 复制粘贴 / C 选区批量填充 / D 手感微调）=====
+            // CellSelect + MultiSelect：允许拖拽框选出一块矩形单元格，是复制/粘贴/批量填充的前提。
+            dgvScoreDetail.MultiSelect = true;
+            dgvScoreDetail.SelectionMode = DataGridViewSelectionMode.CellSelect;
+            // EditOnEnter：进入/点击单元格即进入编辑（Excel 手感，点进去就能改）。
+            dgvScoreDetail.EditMode = DataGridViewEditMode.EditOnEnter;
+            // Ctrl+C 复制选区时不带表头行，便于粘回本表或粘到 Excel。
+            dgvScoreDetail.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
 
             // 下拉/单元格偶发的非法值不弹系统异常框（回填时若历史分值与选项对不上会触发）
             dgvScoreDetail.DataError += (s, ev) => { ev.ThrowException = false; };
@@ -83,86 +103,135 @@ namespace StudentScoreManager.Forms
             // 数字列输入校验（仅非选项列，按各规则 MaxScore 限制）
             dgvScoreDetail.CellValidating += dgvScoreDetail_CellValidating;
 
+            // 编辑手感：进入编辑框后全选(打字即覆盖)，Enter/方向键在格间移动（Excel 行为）
+            dgvScoreDetail.EditingControlShowing += DgvScoreDetail_EditingControlShowing;
+
             // 事件绑定
             dtpTeachingDate.ValueChanged += DtpTeachingDate_ValueChanged;
-            cmbCourseCode.SelectedIndexChanged += CmbCourseCode_SelectedIndexChanged;
+            dgvLogInfo.CellDoubleClick += DgvLogInfo_CellDoubleClick;   // 双击行 = 选课（替代原下拉框）
             button1.Click += (s, e) => ReloadForCurrentCourse();            // 刷新
             button2.Click += ButtonSave_Click;                             // 保存数据
             button3.Click += (s, e) => FillAllPresent();                   // 全部出勤
             button4.Click += (s, e) => ClearSelectedRowsScores();          // 清除选定行
             button5.Click += (s, e) => OpenMappingEditor();                // 评分映射设置
 
+            // 固定 5 行节次（一/二 … 九/十），保证界面高度固定、无课也保留节次
+            InitializeLogInfoFixedRows();
+
             dtpTeachingDate.Value = DateTime.Today;
             LoadCoursesByDate(DateTime.Today);
         }
 
         // =====================================================================
-        // 一、日期 / 课程下拉
+        // 一、日期 -> 固定 5 行课程表 -> 双击选课
         // =====================================================================
-        private void DtpTeachingDate_ValueChanged(object sender, EventArgs e)
+
+        /// <summary>判断一条 CourseItem 是否为"有课"的有效行（LogID 必须存在且非 0）。</summary>
+        private static bool HasCourse(CourseItem? item)
+            => item != null && item.LogID.HasValue && item.LogID.Value != 0;
+
+        /// <summary>建好固定的 5 行，每行仅在节次列写入节次标签，其余留空。</summary>
+        private void InitializeLogInfoFixedRows()
         {
-            cmbCourseCode.SelectedIndexChanged -= CmbCourseCode_SelectedIndexChanged;
-            cmbCourseCode.DataSource = null;
-            dgvLogInfo.DataSource = null;
+            dgvLogInfo.Rows.Clear();
+            foreach (var label in SectionLabels)
+            {
+                int r = dgvLogInfo.Rows.Add();
+                dgvLogInfo.Rows[r].Cells["teachingHours"].Value = label; // 节次列 Name=teachingHours
+                dgvLogInfo.Rows[r].Tag = null;
+            }
+        }
+
+        private void DtpTeachingDate_ValueChanged(object? sender, EventArgs e)
+        {
+            // 切换日期：清空当前选课与高亮、清空下方学生评分表，重新按日期填充课程表
+            _currentCourse = null;
+            _selectedLogRow = null;
             dgvScoreDetail.DataSource = null;
+            if (dgvScoreDetail.Columns.Count > 0) dgvScoreDetail.Rows.Clear();
             LoadCoursesByDate(dtpTeachingDate.Value.Date);
-            cmbCourseCode.SelectedIndexChanged += CmbCourseCode_SelectedIndexChanged;
         }
 
         private void LoadCoursesByDate(DateTime date)
         {
-            var list = new List<CourseItem>();
+            // 1) 先清空 5 行的课程列（只保留节次标签），清行缓存
+            foreach (DataGridViewRow row in dgvLogInfo.Rows)
+            {
+                foreach (DataGridViewColumn col in dgvLogInfo.Columns)
+                {
+                    if (col.Name == "teachingHours") continue; // 节次列保留固定标签
+                    row.Cells[col.Name].Value = null;
+                }
+                row.Tag = null;
+            }
+
+            // 2) 查询当天课程，按 TeachingHours 归一后建立 节次->课程 映射
+            var byHours = new Dictionary<string, CourseItem>();
             string sql = $"SELECT {T_LogID}, {T_CourseCode}, {T_CourseName}, {T_TeachingHours}, " +
                          $"{T_ClassName}, {T_Classroom}, {T_Content} " +
                          $"FROM TeachingLogs WHERE date({T_Date}) = date(@Date) ORDER BY {T_TeachingHours}";
 
-            using var conn = _db.CreateConnection();
-            conn.Open();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = sql;
-            cmd.Parameters.AddWithValue("@Date", date.ToString("yyyy-MM-dd"));
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            using (var conn = _db.CreateConnection())
             {
-                list.Add(new CourseItem
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = sql;
+                cmd.Parameters.AddWithValue("@Date", date.ToString("yyyy-MM-dd"));
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
                 {
-                    LogID = reader.GetInt32(reader.GetOrdinal(T_LogID)),
-                    CourseCode = reader.IsDBNull(reader.GetOrdinal(T_CourseCode)) ? "" : reader.GetString(reader.GetOrdinal(T_CourseCode)),
-                    CourseName = reader.GetString(reader.GetOrdinal(T_CourseName)),
-                    TeachingHours = reader.IsDBNull(reader.GetOrdinal(T_TeachingHours)) ? "" : reader.GetValue(reader.GetOrdinal(T_TeachingHours)).ToString(),
-                    ClassName = reader.GetString(reader.GetOrdinal(T_ClassName)),
-                    Classroom = reader.IsDBNull(reader.GetOrdinal(T_Classroom)) ? "" : reader.GetString(reader.GetOrdinal(T_Classroom)),
-                    Content = reader.IsDBNull(reader.GetOrdinal(T_Content)) ? "" : reader.GetString(reader.GetOrdinal(T_Content)),
-                });
+                    var item = new CourseItem
+                    {
+                        LogID = reader.GetInt32(reader.GetOrdinal(T_LogID)),
+                        CourseCode = reader.IsDBNull(reader.GetOrdinal(T_CourseCode)) ? "" : reader.GetString(reader.GetOrdinal(T_CourseCode)),
+                        CourseName = reader.GetString(reader.GetOrdinal(T_CourseName)),
+                        TeachingHours = reader.IsDBNull(reader.GetOrdinal(T_TeachingHours)) ? "" : reader.GetValue(reader.GetOrdinal(T_TeachingHours)).ToString(),
+                        ClassName = reader.GetString(reader.GetOrdinal(T_ClassName)),
+                        Classroom = reader.IsDBNull(reader.GetOrdinal(T_Classroom)) ? "" : reader.GetString(reader.GetOrdinal(T_Classroom)),
+                        Content = reader.IsDBNull(reader.GetOrdinal(T_Content)) ? "" : reader.GetString(reader.GetOrdinal(T_Content)),
+                    };
+                    string key = (item.TeachingHours ?? "").Trim();
+                    if (!string.IsNullOrEmpty(key) && !byHours.ContainsKey(key))
+                        byHours[key] = item; // 同一节次取第一条（一天一槽一般只一门课）
+                }
             }
 
-            if (list.Count == 0)
+            // 3) 逐行匹配：节次标签 == TeachingHours 的行，填入课程信息并缓存到 row.Tag
+            foreach (DataGridViewRow row in dgvLogInfo.Rows)
             {
-                cmbCourseCode.DataSource = new List<CourseItem> { new CourseItem { CourseCode = "-- 当天无课程 --" } };
-                cmbCourseCode.DisplayMember = nameof(CourseItem.CourseCode);
-                return;
+                string? label = row.Cells["teachingHours"].Value?.ToString();
+                if (label != null && byHours.TryGetValue(label, out var item))
+                {
+                    row.Cells["CourseCode"].Value = item.CourseCode;
+                    row.Cells["CourseName"].Value = item.CourseName;
+                    row.Cells["ClasssName"].Value = item.ClassName;
+                    row.Cells["ClassRoom"].Value = item.Classroom;
+                    row.Cells["TeachingContent"].Value = item.Content;
+                    row.Tag = item;
+                }
             }
-
-            cmbCourseCode.DataSource = list;
-            cmbCourseCode.DisplayMember = nameof(CourseItem.CourseCode);
         }
 
-        private void CmbCourseCode_SelectedIndexChanged(object sender, EventArgs e)
+        /// <summary>双击课程表的某行 = 选中该行课程（替代原下拉框选课）。</summary>
+        private void DgvLogInfo_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
         {
-            if (cmbCourseCode.SelectedItem is not CourseItem item || item.LogID == 0)
-            {
-                dgvLogInfo.DataSource = null;
-                dgvScoreDetail.DataSource = null;
-                if (dgvScoreDetail.Columns.Count > 0) dgvScoreDetail.Rows.Clear();
-                return;
-            }
-            RefreshLogInfoGrid(item);
+            if (e.RowIndex < 0) return;
+            var row = dgvLogInfo.Rows[e.RowIndex];
+            if (!HasCourse(row.Tag as CourseItem)) return; // 该行无课，忽略
+            SelectCourse(row, (CourseItem)row.Tag!);
+        }
+
+        /// <summary>设置当前选中课程、高亮该行、刷新下方评分表。</summary>
+        private void SelectCourse(DataGridViewRow row, CourseItem item)
+        {
+            // 清除上一个高亮
+            if (_selectedLogRow != null && _selectedLogRow != row)
+                _selectedLogRow.DefaultCellStyle.BackColor = System.Drawing.Color.Empty;
+
+            row.DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(205, 226, 247); // 淡蓝高亮
+            _selectedLogRow = row;
+            _currentCourse = item;
             RefreshScoreGrid(item);
-        }
-
-        private void RefreshLogInfoGrid(CourseItem item)
-        {
-            dgvLogInfo.DataSource = new List<CourseItem> { item };
         }
 
         // =====================================================================
@@ -173,7 +242,7 @@ namespace StudentScoreManager.Forms
         {
             dgvScoreDetail.Columns.Clear();
 
-            // 静态列：序号 / 学号 / 姓名（Tag 保持 null，用于在校验/保存时与规则列区分）
+            // 静态列：序号 / 学号 / 姓名（Tag 保持 null，用于在校验/保存/快速填充时与规则列区分）
             dgvScoreDetail.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = COL_INDEX,
@@ -183,10 +252,8 @@ namespace StudentScoreManager.Forms
                 Tag = null,
                 DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             });
-            dgvScoreDetail.Columns.Add(new DataGridViewTextBoxColumn
-            { Name = COL_SID, HeaderText = "学号", Width = 140, ReadOnly = true, Tag = null });
-            dgvScoreDetail.Columns.Add(new DataGridViewTextBoxColumn
-            { Name = COL_SNAME, HeaderText = "姓名", Width = 100, ReadOnly = true, Tag = null });
+            dgvScoreDetail.Columns.Add(new DataGridViewTextBoxColumn { Name = COL_SID, HeaderText = "学号", Width = 140, ReadOnly = true, Tag = null });
+            dgvScoreDetail.Columns.Add(new DataGridViewTextBoxColumn { Name = COL_SNAME, HeaderText = "姓名", Width = 100, ReadOnly = true, Tag = null });
 
             // 读评分规则（按 SortOrder 排序），逐条生成一列
             var rules = LoadScoringRules();
@@ -281,7 +348,7 @@ namespace StudentScoreManager.Forms
                 row.Cells[COL_SNAME].Value = st.Name;
             }
 
-            BackfillSavedScores(item.LogID);
+            BackfillSavedScores(item.LogID ?? 0);
         }
 
         /// <summary>回填该节课已保存过的分数：ScoreDetails 已有记录则填回表格（下拉按分值反查文本）。</summary>
@@ -308,7 +375,7 @@ namespace StudentScoreManager.Forms
 
             foreach (DataGridViewRow row in dgvScoreDetail.Rows)
             {
-                string sid = row.Cells[COL_SID].Value?.ToString();
+                string? sid = row.Cells[COL_SID].Value?.ToString();
                 if (string.IsNullOrEmpty(sid)) continue;
 
                 foreach (DataGridViewColumn col in dgvScoreDetail.Columns)
@@ -334,7 +401,7 @@ namespace StudentScoreManager.Forms
         // =====================================================================
         // 三、输入校验（仅数值列）
         // =====================================================================
-        private void dgvScoreDetail_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        private void dgvScoreDetail_CellValidating(object? sender, DataGridViewCellValidatingEventArgs e)
         {
             if (e.RowIndex < 0) return;
             var col = dgvScoreDetail.Columns[e.ColumnIndex];
@@ -350,13 +417,238 @@ namespace StudentScoreManager.Forms
         }
 
         // =====================================================================
+        // 三·补、Excel 式快速填写（B 复制粘贴 / C 选区批量填充 / D 手感微调）
+        // =====================================================================
+
+        /// <summary>
+        /// 窗体层命令键拦截：在编辑子控件吞键之前拿到 Ctrl+C / Ctrl+V / Ctrl+Enter，
+        /// 仅当焦点在学生评分表（含其编辑框）时生效。
+        /// </summary>
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (dgvScoreDetail.ContainsFocus)
+            {
+                switch (keyData)
+                {
+                    case Keys.Control | Keys.C:
+                        CopySelectionToClipboard();
+                        return true;
+                    case Keys.Control | Keys.V:
+                        PasteFromClipboard();
+                        return true;
+                    case Keys.Control | Keys.Enter:
+                        FillSelectionWithCurrentValue();
+                        return true;
+                }
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        /// <summary>编辑框出现时：数字框全选(打字即覆盖旧值)，并挂上 Enter/方向键换格逻辑。</summary>
+        private void DgvScoreDetail_EditingControlShowing(object? sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            // 只处理数字文本列；下拉(ComboBox)列保留其自身交互，不接管方向键。
+            if (e.Control is TextBox tb)
+            {
+                tb.KeyDown -= ScoreEdit_KeyDown; // 防重复订阅
+                tb.KeyDown += ScoreEdit_KeyDown;
+                tb.SelectAll();                  // 进入编辑即全选 -> 打字直接覆盖（Excel 手感）
+            }
+        }
+
+        /// <summary>编辑框内 Enter/方向键 -> 提交当前格并移动到相邻格（Excel 行为）。</summary>
+        private void ScoreEdit_KeyDown(object? sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Enter when !e.Shift && !e.Control:
+                    e.SuppressKeyPress = true;
+                    MoveActiveCell(+1, 0);
+                    break;
+                case Keys.Down:
+                    e.SuppressKeyPress = true;
+                    MoveActiveCell(+1, 0);
+                    break;
+                case Keys.Up:
+                    e.SuppressKeyPress = true;
+                    MoveActiveCell(-1, 0);
+                    break;
+                case Keys.Left:
+                    e.SuppressKeyPress = true;
+                    MoveActiveCell(0, -1);
+                    break;
+                case Keys.Right:
+                    e.SuppressKeyPress = true;
+                    MoveActiveCell(0, +1);
+                    break;
+            }
+        }
+
+        /// <summary>提交当前编辑并把活动单元格按 (dr,dc) 位移一格（越界自动夹取）。EditOnEnter 下新格自动进入编辑。</summary>
+        private void MoveActiveCell(int dr, int dc)
+        {
+            var cur = dgvScoreDetail.CurrentCell;
+            if (cur == null) return;
+            int r = cur.RowIndex, c = cur.ColumnIndex;
+
+            dgvScoreDetail.EndEdit(); // 先提交正在编辑的格（触发校验）
+
+            r = Math.Max(0, Math.Min(dgvScoreDetail.Rows.Count - 1, r + dr));
+            c = Math.Max(0, Math.Min(dgvScoreDetail.Columns.Count - 1, c + dc));
+            if (r == cur.RowIndex && c == cur.ColumnIndex) return;
+
+            dgvScoreDetail.CurrentCell = dgvScoreDetail.Rows[r].Cells[c];
+        }
+
+        /// <summary>B：把选区按 Excel 同款"Tab 分隔列、换行分隔行"写入剪贴板（用官方 GetClipboardContent）。</summary>
+        private void CopySelectionToClipboard()
+        {
+            if (dgvScoreDetail.CurrentCell == null) return;
+            dgvScoreDetail.EndEdit(); // 编辑态下先提交，避免只复制编辑框选中文本
+            IDataObject? data = dgvScoreDetail.GetClipboardContent(); // 受 ClipboardCopyMode 控制，已设为不带表头
+            if (data != null) Clipboard.SetDataObject(data, true);
+        }
+
+        /// <summary>C：把当前单元格值广播填充到整个选区内的可编辑评分格。</summary>
+        private void FillSelectionWithCurrentValue()
+        {
+            if (dgvScoreDetail.CurrentCell == null) return;
+            dgvScoreDetail.EndEdit();
+            string text = dgvScoreDetail.CurrentCell.Value?.ToString() ?? "";
+
+            int applied = 0, skipped = 0;
+            foreach (DataGridViewCell cell in dgvScoreDetail.SelectedCells)
+            {
+                if (cell.RowIndex < 0) continue;
+                if (cell == dgvScoreDetail.CurrentCell) continue; // 当前格已是该值
+                if (TrySetScoreCell(cell, text, out bool changed)) { if (changed) applied++; }
+                else skipped++;
+            }
+            if (skipped > 0)
+                MessageBox.Show($"已填充 {applied} 个单元格，跳过 {skipped} 个（只读列、不合法数字或不在该列选项中）。",
+                    "批量填充");
+        }
+
+        /// <summary>B：解析剪贴板文本（Tab 分列、换行分行）粘回评分表。单值->铺满选区；多值->自选区左上角展开。</summary>
+        private void PasteFromClipboard()
+        {
+            if (dgvScoreDetail.CurrentCell == null) return;
+
+            string clip;
+            try { clip = Clipboard.GetText(); } catch { return; }
+            if (string.IsNullOrEmpty(clip)) return;
+
+            dgvScoreDetail.EndEdit();
+
+            if (!GetSelectionBounds(out int r1, out int c1))
+            {
+                var cc = dgvScoreDetail.CurrentCell;
+                r1 = cc.RowIndex; c1 = cc.ColumnIndex;
+            }
+
+            // 规范化换行并去掉尾部多余空行
+            var lines = clip.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd('\n').Split('\n');
+
+            int applied = 0, skipped = 0;
+            bool single = lines.Length == 1 && !lines[0].Contains('\t');
+
+            if (single)
+            {
+                // 单个值 -> 广播到当前选区（若选区只有当前格，等同于只改当前格）
+                string v = lines[0];
+                foreach (DataGridViewCell cell in dgvScoreDetail.SelectedCells)
+                {
+                    if (cell.RowIndex < 0) continue;
+                    if (TrySetScoreCell(cell, v, out bool changed)) { if (changed) applied++; }
+                    else skipped++;
+                }
+            }
+            else
+            {
+                // 多行/多列块 -> 以选区左上角为锚点，按行列顺序写入
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    int tr = r1 + i;
+                    if (tr >= dgvScoreDetail.Rows.Count) break;
+                    var parts = lines[i].Split('\t');
+                    for (int j = 0; j < parts.Length; j++)
+                    {
+                        int tc = c1 + j;
+                        if (tc >= dgvScoreDetail.Columns.Count) break;
+                        var cell = dgvScoreDetail.Rows[tr].Cells[tc];
+                        if (TrySetScoreCell(cell, parts[j], out bool changed)) { if (changed) applied++; }
+                        else skipped++;
+                    }
+                }
+            }
+
+            if (skipped > 0)
+                MessageBox.Show($"粘贴完成：写入 {applied} 个单元格，跳过 {skipped} 个（只读列、不合法数字或不在该列选项中）。",
+                    "粘贴");
+        }
+
+        /// <summary>取选区包围盒的左上角行列；无选中返回 false。</summary>
+        private bool GetSelectionBounds(out int rowTop, out int colLeft)
+        {
+            rowTop = -1; colLeft = -1;
+            if (dgvScoreDetail.SelectedCells.Count == 0) return false;
+            foreach (DataGridViewCell cell in dgvScoreDetail.SelectedCells)
+            {
+                if (cell.RowIndex < 0) continue;
+                if (rowTop < 0) { rowTop = cell.RowIndex; colLeft = cell.ColumnIndex; }
+                else
+                {
+                    if (cell.RowIndex < rowTop) rowTop = cell.RowIndex;
+                    if (cell.ColumnIndex < colLeft) colLeft = cell.ColumnIndex;
+                }
+            }
+            return rowTop >= 0;
+        }
+
+        /// <summary>
+        /// 安全写入一个评分单元格：只读静态列 / 下拉值不在选项 / 数字越界 一律拒绝(返回 false)。
+        /// 程序化赋值不会触发 CellValidating，故在此就地校验。空串=清空。changed 标识是否真正改动。
+        /// </summary>
+        private bool TrySetScoreCell(DataGridViewCell cell, string raw, out bool changed)
+        {
+            changed = false;
+            var col = dgvScoreDetail.Columns[cell.ColumnIndex];
+            if (col.Tag is not RuleColumnTag tag) return false; // 序号/学号/姓名 -> 只读，跳过
+
+            string text = (raw ?? "").Trim();
+            object? old = cell.Value;
+
+            if (tag.IsOption)
+            {
+                if (text.Length == 0) { cell.Value = null; }
+                else
+                {
+                    if (!((DataGridViewComboBoxColumn)col).Items.Contains(text)) return false; // 不在选项 -> 跳过
+                    cell.Value = text;
+                }
+            }
+            else
+            {
+                if (text.Length == 0) { cell.Value = null; }
+                else
+                {
+                    if (!double.TryParse(text, out double v) || v < 0 || v > tag.MaxScore) return false; // 非法数字 -> 跳过
+                    cell.Value = text;
+                }
+            }
+
+            changed = !object.Equals(cell.Value, old);
+            return true;
+        }
+
+        // =====================================================================
         // 四、四个按钮动作
         // =====================================================================
         /// <summary>刷新：重新按当前课程建列 + 拉学生 + 回填。</summary>
         private void ReloadForCurrentCourse()
         {
-            if (cmbCourseCode.SelectedItem is CourseItem item && item.LogID != 0)
-                RefreshScoreGrid(item);
+            if (HasCourse(_currentCourse))
+                RefreshScoreGrid(_currentCourse!);
             else
                 LoadCoursesByDate(dtpTeachingDate.Value.Date);
         }
@@ -387,32 +679,40 @@ namespace StudentScoreManager.Forms
             }
         }
 
-        /// <summary>清除选定行：清空选中行的打分组内容（保留学生行本身）。</summary>
+        /// <summary>
+        /// 清除选定：清空被选中单元格所属行的打分组内容（保留学生行本身）。
+        /// 注意：评分表已改为 CellSelect 模式，SelectedRows 为空，需从 SelectedCells 反推涉及的行。
+        /// </summary>
         private void ClearSelectedRowsScores()
         {
             var ruleCols = dgvScoreDetail.Columns.Cast<DataGridViewColumn>().Where(c => c.Tag is RuleColumnTag).ToList();
-            var rows = dgvScoreDetail.SelectedRows.Cast<DataGridViewRow>().Where(r => !r.IsNewRow).ToList();
+
+            var rows = new HashSet<int>();
+            foreach (DataGridViewCell cell in dgvScoreDetail.SelectedCells)
+                if (cell.RowIndex >= 0) rows.Add(cell.RowIndex);
+
             if (rows.Count == 0)
             {
-                MessageBox.Show("请先选中要清除评分的行。", "提示");
+                MessageBox.Show("请先选中要清除评分的单元格或整行。", "提示");
                 return;
             }
-            foreach (var row in rows)
+
+            foreach (int ri in rows)
                 foreach (var col in ruleCols)
-                    row.Cells[col.Name].Value = null;
+                    dgvScoreDetail.Rows[ri].Cells[col.Name].Value = null;
         }
 
         /// <summary>保存数据：逐行逐规则拆分写入 ScoreDetails；存在(LogID,StudentID,RuleName)则更新，否则插入。单事务，出错整体回滚。</summary>
-        private void ButtonSave_Click(object sender, EventArgs e)
+        private void ButtonSave_Click(object? sender, EventArgs e)
         {
-            if (cmbCourseCode.SelectedItem is not CourseItem item || item.LogID == 0)
+            if (!HasCourse(_currentCourse))
             {
-                MessageBox.Show("请先选择一节有效课程。", "提示");
+                MessageBox.Show("请先在右侧课程表中双击选择一节有效课程。", "提示");
                 return;
             }
             dgvScoreDetail.EndEdit(); // 确保正在编辑的单元格先提交
 
-            int logId = item.LogID;
+            int logId = _currentCourse!.LogID!.Value;
             var errors = new List<string>();
             int affected = 0;
 
@@ -587,7 +887,7 @@ namespace StudentScoreManager.Forms
                 foreach (var r in sel) grid.Rows.Remove(r);
             };
 
-            var btnOk = new Button { Text = "保存", Left = 200, Top = 310, Width = 90, Height =34,  Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
+            var btnOk = new Button { Text = "保存", Left = 200, Top = 310, Width = 90, Height = 34, Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
             var btnCancel = new Button { Text = "关闭", Left = 306, Top = 310, Width = 90, Height = 34, Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
             btnCancel.Click += (s, e) => dlg.Close();
 
@@ -643,8 +943,8 @@ namespace StudentScoreManager.Forms
                 }
 
                 // 映射变化后，重建当前打分组列（下拉选项即时更新），并回填
-                if (cmbCourseCode.SelectedItem is CourseItem cur && cur.LogID != 0)
-                    RefreshScoreGrid(cur);
+                if (HasCourse(_currentCourse))
+                    RefreshScoreGrid(_currentCourse!);
 
                 MessageBox.Show($"规则[{rule}] 的映射已保存。", "成功");
                 LoadRuleToGrid();

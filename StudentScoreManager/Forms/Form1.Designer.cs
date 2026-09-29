@@ -1,4 +1,5 @@
 ﻿
+
 namespace StudentScoreManager.Forms
 {
     partial class Form1
@@ -32,12 +33,11 @@ namespace StudentScoreManager.Forms
             sqliteCommand1 = new Microsoft.Data.Sqlite.SqliteCommand();
             dtpTeachingDate = new DateTimePicker();
             label1 = new Label();
-            label2 = new Label();
-            cmbCourseCode = new ComboBox();
             button1 = new Button();
             dgvLogInfo = new DataGridView();
-            CourseName = new DataGridViewTextBoxColumn();
             teachingHours = new DataGridViewTextBoxColumn();
+            CourseCode = new DataGridViewTextBoxColumn();
+            CourseName = new DataGridViewTextBoxColumn();
             ClasssName = new DataGridViewTextBoxColumn();
             ClassRoom = new DataGridViewTextBoxColumn();
             TeachingContent = new DataGridViewTextBoxColumn();
@@ -59,9 +59,12 @@ namespace StudentScoreManager.Forms
             // 
             // dtpTeachingDate
             // 
-            dtpTeachingDate.Location = new Point(178, 29);
+            dtpTeachingDate.CalendarFont = new Font("Microsoft YaHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            dtpTeachingDate.Font = new Font("Microsoft YaHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            dtpTeachingDate.Format = DateTimePickerFormat.Short;
+            dtpTeachingDate.Location = new Point(113, 39);
             dtpTeachingDate.Name = "dtpTeachingDate";
-            dtpTeachingDate.Size = new Size(261, 30);
+            dtpTeachingDate.Size = new Size(282, 38);
             dtpTeachingDate.TabIndex = 0;
             // 
             // label1
@@ -73,26 +76,9 @@ namespace StudentScoreManager.Forms
             label1.TabIndex = 1;
             label1.Text = "授课日期";
             // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(25, 92);
-            label2.Name = "label2";
-            label2.Size = new Size(82, 24);
-            label2.TabIndex = 2;
-            label2.Text = "课程选择";
-            // 
-            // cmbCourseCode
-            // 
-            cmbCourseCode.FormattingEnabled = true;
-            cmbCourseCode.Location = new Point(178, 99);
-            cmbCourseCode.Name = "cmbCourseCode";
-            cmbCourseCode.Size = new Size(261, 32);
-            cmbCourseCode.TabIndex = 3;
-            // 
             // button1
             // 
-            button1.Location = new Point(25, 205);
+            button1.Location = new Point(474, 65);
             button1.Name = "button1";
             button1.Size = new Size(112, 34);
             button1.TabIndex = 4;
@@ -101,77 +87,91 @@ namespace StudentScoreManager.Forms
             // 
             // dgvLogInfo
             // 
+            dgvLogInfo.AllowUserToDeleteRows = false;
             dgvLogInfo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvLogInfo.Columns.AddRange(new DataGridViewColumn[] { CourseName, teachingHours, ClasssName, ClassRoom, TeachingContent });
-            dgvLogInfo.Location = new Point(471, 18);
+            dgvLogInfo.Columns.AddRange(new DataGridViewColumn[] { teachingHours, CourseCode, CourseName, ClasssName, ClassRoom, TeachingContent });
+            dgvLogInfo.Location = new Point(25, 114);
             dgvLogInfo.Name = "dgvLogInfo";
             dgvLogInfo.RowHeadersVisible = false;
             dgvLogInfo.RowHeadersWidth = 62;
-            dgvLogInfo.Size = new Size(776, 221);
+            dgvLogInfo.Size = new Size(1268, 221);
             dgvLogInfo.TabIndex = 5;
-            // 
-            // CourseName
-            // 
-            CourseName.DataPropertyName = "CourseName";
-            CourseName.HeaderText = "课程名称";
-            CourseName.MinimumWidth = 8;
-            CourseName.Name = "CourseName";
-            CourseName.Width = 150;
             // 
             // teachingHours
             // 
+            teachingHours.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
             teachingHours.DataPropertyName = "TeachingHours";
             teachingHours.HeaderText = "节次";
             teachingHours.MinimumWidth = 8;
             teachingHours.Name = "teachingHours";
-            teachingHours.Width = 150;
+            teachingHours.Width = 82;
+            // 
+            // CourseCode
+            // 
+            CourseCode.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            CourseCode.HeaderText = "课程编号";
+            CourseCode.MinimumWidth = 8;
+            CourseCode.Name = "CourseCode";
+            CourseCode.Width = 118;
+            // 
+            // CourseName
+            // 
+            CourseName.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            CourseName.DataPropertyName = "CourseName";
+            CourseName.HeaderText = "课程名称";
+            CourseName.MinimumWidth = 8;
+            CourseName.Name = "CourseName";
+            CourseName.Width = 118;
             // 
             // ClasssName
             // 
+            ClasssName.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             ClasssName.DataPropertyName = "ClassName";
             ClasssName.HeaderText = "班级名称";
             ClasssName.MinimumWidth = 8;
             ClasssName.Name = "ClasssName";
-            ClasssName.Width = 150;
+            ClasssName.Width = 118;
             // 
             // ClassRoom
             // 
+            ClassRoom.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             ClassRoom.DataPropertyName = "Classroom";
             ClassRoom.HeaderText = "教室";
             ClassRoom.MinimumWidth = 8;
             ClassRoom.Name = "ClassRoom";
-            ClassRoom.Width = 150;
+            ClassRoom.Width = 82;
             // 
             // TeachingContent
             // 
+            TeachingContent.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             TeachingContent.DataPropertyName = "Content";
             TeachingContent.HeaderText = "教学内容";
             TeachingContent.MinimumWidth = 8;
             TeachingContent.Name = "TeachingContent";
-            TeachingContent.Width = 150;
             // 
             // dgvScoreDetail
             // 
+            dgvScoreDetail.AllowUserToDeleteRows = false;
             dgvScoreDetail.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvScoreDetail.Location = new Point(25, 265);
+            dgvScoreDetail.Location = new Point(25, 355);
             dgvScoreDetail.Name = "dgvScoreDetail";
             dgvScoreDetail.RowHeadersVisible = false;
             dgvScoreDetail.RowHeadersWidth = 62;
-            dgvScoreDetail.Size = new Size(1222, 573);
+            dgvScoreDetail.Size = new Size(1268, 483);
             dgvScoreDetail.TabIndex = 6;
             // 
             // button2
             // 
-            button2.Location = new Point(303, 165);
+            button2.Location = new Point(767, 25);
             button2.Name = "button2";
-            button2.Size = new Size(112, 34);
+            button2.Size = new Size(99, 74);
             button2.TabIndex = 7;
             button2.Text = "保存数据";
             button2.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
-            button3.Location = new Point(25, 165);
+            button3.Location = new Point(474, 25);
             button3.Name = "button3";
             button3.Size = new Size(112, 34);
             button3.TabIndex = 8;
@@ -180,16 +180,16 @@ namespace StudentScoreManager.Forms
             // 
             // button4
             // 
-            button4.Location = new Point(162, 165);
+            button4.Location = new Point(611, 25);
             button4.Name = "button4";
-            button4.Size = new Size(112, 34);
+            button4.Size = new Size(136, 34);
             button4.TabIndex = 9;
             button4.Text = "清除选定行";
             button4.UseVisualStyleBackColor = true;
             // 
             // button5
             // 
-            button5.Location = new Point(303, 205);
+            button5.Location = new Point(611, 65);
             button5.Name = "button5";
             button5.Size = new Size(136, 34);
             button5.TabIndex = 10;
@@ -208,8 +208,6 @@ namespace StudentScoreManager.Forms
             Controls.Add(dgvScoreDetail);
             Controls.Add(dgvLogInfo);
             Controls.Add(button1);
-            Controls.Add(cmbCourseCode);
-            Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(dtpTeachingDate);
             Name = "Form1";
@@ -226,19 +224,18 @@ namespace StudentScoreManager.Forms
         private Microsoft.Data.Sqlite.SqliteCommand sqliteCommand1;
         private DateTimePicker dtpTeachingDate;
         private Label label1;
-        private Label label2;
-        private ComboBox cmbCourseCode;
         private Button button1;
         private DataGridView dgvLogInfo;
-        private DataGridViewTextBoxColumn CourseName;
-        private DataGridViewTextBoxColumn teachingHours;
-        private DataGridViewTextBoxColumn ClasssName;
-        private DataGridViewTextBoxColumn ClassRoom;
-        private DataGridViewTextBoxColumn TeachingContent;
         private DataGridView dgvScoreDetail;
         private Button button2;
         private Button button3;
         private Button button4;
         private Button button5;
+        private DataGridViewTextBoxColumn teachingHours;
+        private DataGridViewTextBoxColumn CourseCode;
+        private DataGridViewTextBoxColumn CourseName;
+        private DataGridViewTextBoxColumn ClasssName;
+        private DataGridViewTextBoxColumn ClassRoom;
+        private DataGridViewTextBoxColumn TeachingContent;
     }
 }
