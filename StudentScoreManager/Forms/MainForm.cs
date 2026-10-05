@@ -1,12 +1,14 @@
 
 
+using Krypton.Toolkit;
 using Microsoft.Data.Sqlite;
 using StudentScoreManager.Models;
 using StudentScoreManager.Services;
 
 namespace StudentScoreManager
 {
-    public partial class MainForm : Form
+    // 基类由 Form 改为 KryptonForm，与 Form1 风格保持一致（圆角标题栏、统一换肤）
+    public partial class MainForm : KryptonForm
     {
         // 声明全局服务实例
         // 使用 null! 告诉编译器：该字段将在后续（如 Load 事件中）被安全地初始化，消除警告
@@ -16,6 +18,10 @@ namespace StudentScoreManager
         public MainForm()
         {
             InitializeComponent();
+
+            // 统一主题：对齐全局调色板；下一行随后绑定主题下拉框，支持运行期动态换肤。
+            // 主题已由 AppTheme 内唯一的全局 KryptonManager 实例统一管理，此处无需再单独设置主题
+            AppTheme.BindCombo(cmbTheme); // 运行期动态换肤：绑定主题下拉框
         }
 
         /// <summary>
@@ -194,11 +200,12 @@ namespace StudentScoreManager
         /// 每次调用会清空重建，并尽量保留用户此前的选择；若原选项已不存在则回落到"全部"。
         /// 强制 DropDown 为 DropDownList，避免手动输入库中不存在的班级。
         /// </summary>
-        private void PopulateClassFilter(ComboBox cmb)
+        private void PopulateClassFilter(KryptonComboBox cmb)
         {
             string? current = cmb.SelectedItem?.ToString();
 
-            cmb.BeginUpdate();
+            // KryptonComboBox 为内部 ComboBox 的包装控件，不提供 BeginUpdate/EndUpdate，
+            // 直接使用 Items 集合操作即可（重建项数量极少，无需挂起重绘）。
             cmb.Items.Clear();
             cmb.Items.Add("全部");
             try
@@ -218,10 +225,6 @@ namespace StudentScoreManager
             {
                 MessageBox.Show($"加载班级列表失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            finally
-            {
-                cmb.EndUpdate();
-            }
 
             // 恢复选择：原选项仍在则选中它，否则回落到"全部"(索引 0)
             int idx = (current != null) ? cmb.Items.IndexOf(current) : -1;
@@ -235,10 +238,11 @@ namespace StudentScoreManager
         /// 每次调用清空重建并尽量保留用户此前的选择；原选项已不存在则回落到"全部"。
         /// 强制 DropDownList，避免手动输入库中不存在的课程名。
         /// </summary>
-        private void PopulateCourseFilter(ComboBox cmb)
+        private void PopulateCourseFilter(KryptonComboBox cmb)
         {
             string? current = cmb.SelectedItem?.ToString();
-            cmb.BeginUpdate();
+
+            // 同 PopulateClassFilter：KryptonComboBox 无 BeginUpdate/EndUpdate，直接操作 Items。
             cmb.Items.Clear();
             cmb.Items.Add("全部");
             try
@@ -257,10 +261,6 @@ namespace StudentScoreManager
             catch (Exception ex)
             {
                 MessageBox.Show($"加载课程列表失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                cmb.EndUpdate();
             }
             int idx = (current != null) ? cmb.Items.IndexOf(current) : -1;
             cmb.SelectedIndex = idx >= 0 ? idx : 0;

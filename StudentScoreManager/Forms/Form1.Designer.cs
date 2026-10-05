@@ -1,5 +1,6 @@
 ﻿
 
+
 namespace StudentScoreManager.Forms
 {
     partial class Form1
@@ -30,8 +31,8 @@ namespace StudentScoreManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            kryptonManager1 = new Krypton.Toolkit.KryptonManager(components);
+            lblTheme = new Krypton.Toolkit.KryptonLabel();
+            cmbTheme = new Krypton.Toolkit.KryptonComboBox();
             pnlTop = new Krypton.Toolkit.KryptonPanel();
             lblDate = new Krypton.Toolkit.KryptonLabel();
             dtpDate = new DateTimePicker();
@@ -47,6 +48,7 @@ namespace StudentScoreManager.Forms
             btnPresent = new Krypton.Toolkit.KryptonButton();
             btnClear = new Krypton.Toolkit.KryptonButton();
             btnSave = new Krypton.Toolkit.KryptonButton();
+            ((System.ComponentModel.ISupportInitialize)cmbTheme).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pnlTop).BeginInit();
             pnlTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitMain).BeginInit();
@@ -60,13 +62,26 @@ namespace StudentScoreManager.Forms
             pnlActions.SuspendLayout();
             SuspendLayout();
             // 
-            // kryptonManager1
+            // lblTheme
             // 
-            kryptonManager1.ToolkitStrings.MessageBoxStrings.LessDetails = "L&ess Details...";
-            kryptonManager1.ToolkitStrings.MessageBoxStrings.MoreDetails = "&More Details...";
+            lblTheme.Location = new Point(360, 22);
+            lblTheme.Name = "lblTheme";
+            lblTheme.Size = new Size(51, 29);
+            lblTheme.TabIndex = 4;
+            lblTheme.Values.Text = "主题";
+            // 
+            // cmbTheme
+            // 
+            cmbTheme.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbTheme.Location = new Point(415, 18);
+            cmbTheme.Name = "cmbTheme";
+            cmbTheme.Size = new Size(200, 30);
+            cmbTheme.TabIndex = 5;
             // 
             // pnlTop
             // 
+            pnlTop.Controls.Add(lblTheme);
+            pnlTop.Controls.Add(cmbTheme);
             pnlTop.Controls.Add(lblDate);
             pnlTop.Controls.Add(dtpDate);
             pnlTop.Controls.Add(btnRefresh);
@@ -74,7 +89,7 @@ namespace StudentScoreManager.Forms
             pnlTop.Dock = DockStyle.Top;
             pnlTop.Location = new Point(0, 0);
             pnlTop.Name = "pnlTop";
-            pnlTop.Size = new Size(1247, 68);
+            pnlTop.Size = new Size(1395, 68);
             pnlTop.TabIndex = 0;
             // 
             // lblDate
@@ -99,7 +114,7 @@ namespace StudentScoreManager.Forms
             // btnRefresh
             // 
             btnRefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnRefresh.Location = new Point(967, 15);
+            btnRefresh.Location = new Point(1115, 15);
             btnRefresh.Name = "btnRefresh";
             btnRefresh.Size = new Size(120, 40);
             btnRefresh.TabIndex = 2;
@@ -109,7 +124,7 @@ namespace StudentScoreManager.Forms
             // btnMappingEditor
             // 
             btnMappingEditor.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnMappingEditor.Location = new Point(1103, 15);
+            btnMappingEditor.Location = new Point(1251, 15);
             btnMappingEditor.Name = "btnMappingEditor";
             btnMappingEditor.Size = new Size(124, 40);
             btnMappingEditor.TabIndex = 3;
@@ -136,7 +151,7 @@ namespace StudentScoreManager.Forms
             splitMain.Panel2.Controls.Add(pnlActions);
             splitMain.Panel2.Padding = new Padding(8, 8, 10, 8);
             splitMain.Panel2MinSize = 520;
-            splitMain.Size = new Size(1247, 952);
+            splitMain.Size = new Size(1395, 952);
             splitMain.SplitterDistance = 336;
             splitMain.SplitterWidth = 8;
             splitMain.TabIndex = 1;
@@ -162,7 +177,7 @@ namespace StudentScoreManager.Forms
             dgvScoreDetail.Name = "dgvScoreDetail";
             dgvScoreDetail.RowHeadersVisible = false;
             dgvScoreDetail.RowHeadersWidth = 62;
-            dgvScoreDetail.Size = new Size(885, 812);
+            dgvScoreDetail.Size = new Size(1033, 812);
             dgvScoreDetail.TabIndex = 2;
             // 
             // pnlHeader
@@ -172,7 +187,7 @@ namespace StudentScoreManager.Forms
             pnlHeader.Dock = DockStyle.Top;
             pnlHeader.Location = new Point(8, 8);
             pnlHeader.Name = "pnlHeader";
-            pnlHeader.Size = new Size(885, 56);
+            pnlHeader.Size = new Size(1033, 56);
             pnlHeader.TabIndex = 0;
             // 
             // lblCourseTitle
@@ -180,14 +195,14 @@ namespace StudentScoreManager.Forms
             lblCourseTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lblCourseTitle.Location = new Point(12, 14);
             lblCourseTitle.Name = "lblCourseTitle";
-            lblCourseTitle.Size = new Size(527, 30);
+            lblCourseTitle.Size = new Size(675, 30);
             lblCourseTitle.TabIndex = 0;
             lblCourseTitle.Text = "请选择左侧课程";
             // 
             // lblSaveState
             // 
             lblSaveState.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            lblSaveState.Location = new Point(763, 14);
+            lblSaveState.Location = new Point(911, 14);
             lblSaveState.Name = "lblSaveState";
             lblSaveState.Size = new Size(110, 30);
             lblSaveState.TabIndex = 1;
@@ -201,13 +216,13 @@ namespace StudentScoreManager.Forms
             pnlActions.Dock = DockStyle.Bottom;
             pnlActions.Location = new Point(8, 876);
             pnlActions.Name = "pnlActions";
-            pnlActions.Size = new Size(885, 68);
+            pnlActions.Size = new Size(1033, 68);
             pnlActions.TabIndex = 1;
             // 
             // btnPresent
             // 
             btnPresent.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnPresent.Location = new Point(497, 14);
+            btnPresent.Location = new Point(645, 14);
             btnPresent.Name = "btnPresent";
             btnPresent.Size = new Size(120, 40);
             btnPresent.TabIndex = 0;
@@ -217,7 +232,7 @@ namespace StudentScoreManager.Forms
             // btnClear
             // 
             btnClear.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClear.Location = new Point(627, 14);
+            btnClear.Location = new Point(775, 14);
             btnClear.Name = "btnClear";
             btnClear.Size = new Size(120, 40);
             btnClear.TabIndex = 1;
@@ -227,7 +242,7 @@ namespace StudentScoreManager.Forms
             // btnSave
             // 
             btnSave.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnSave.Location = new Point(757, 14);
+            btnSave.Location = new Point(905, 14);
             btnSave.Name = "btnSave";
             btnSave.Size = new Size(120, 40);
             btnSave.TabIndex = 2;
@@ -238,7 +253,7 @@ namespace StudentScoreManager.Forms
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1247, 1020);
+            ClientSize = new Size(1395, 1020);
             Controls.Add(splitMain);
             Controls.Add(pnlTop);
             MinimumSize = new Size(1080, 700);
@@ -246,6 +261,7 @@ namespace StudentScoreManager.Forms
             StartPosition = FormStartPosition.CenterScreen;
             Text = "课堂评分";
             Load += Form1_Load;
+            ((System.ComponentModel.ISupportInitialize)cmbTheme).EndInit();
             ((System.ComponentModel.ISupportInitialize)pnlTop).EndInit();
             pnlTop.ResumeLayout(false);
             pnlTop.PerformLayout();
@@ -263,7 +279,8 @@ namespace StudentScoreManager.Forms
 
         #endregion
 
-        private Krypton.Toolkit.KryptonManager kryptonManager1;
+        private Krypton.Toolkit.KryptonLabel lblTheme;
+        private Krypton.Toolkit.KryptonComboBox cmbTheme;
         private Krypton.Toolkit.KryptonPanel pnlTop;
         private Krypton.Toolkit.KryptonLabel lblDate;
         private DateTimePicker dtpDate;

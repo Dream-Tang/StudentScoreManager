@@ -1,4 +1,7 @@
 ﻿
+
+using Krypton.Toolkit;
+
 namespace StudentScoreManager
 {
     partial class MainForm
@@ -29,288 +32,385 @@ namespace StudentScoreManager
         /// </summary>
         private void InitializeComponent()
         {
-            btnImportExcel = new Button();
-            btnCleanupDuplicates = new Button();
-            btnDownloadTemplate = new Button();
-            chkOverwrite = new CheckBox();
-            BtnConfirmExport = new Button();
-            tabControl1 = new TabControl();
+            lblTheme = new KryptonLabel();
+            cmbTheme = new KryptonComboBox();
+            panelLeft = new KryptonPanel();
+            lblImportTitle = new KryptonLabel();
+            btnDownloadTemplate = new KryptonButton();
+            btnImportExcel = new KryptonButton();
+            chkOverwrite = new KryptonCheckBox();
+            btnCleanupDuplicates = new KryptonButton();
+            panelRight = new KryptonPanel();
+            tabExport = new TabControl();
             studentsPage = new TabPage();
-            label4 = new Label();
-            label3 = new Label();
-            txtStudentKeyword = new TextBox();
-            cmbClass = new ComboBox();
+            label3 = new KryptonLabel();
+            cmbClass = new KryptonComboBox();
+            label4 = new KryptonLabel();
+            txtStudentKeyword = new KryptonTextBox();
             teachingLogPage = new TabPage();
-            label6 = new Label();
-            label5 = new Label();
-            label2 = new Label();
-            label1 = new Label();
-            cmbCourse = new ComboBox();
-            cmbLogClass = new ComboBox();
-            dpEndDate = new DateTimePicker();
-            dpStartDate = new DateTimePicker();
-            btnStartUse = new Button();
-            tabControl1.SuspendLayout();
+            label1 = new KryptonLabel();
+            dpStartDate = new KryptonDateTimePicker();
+            label2 = new KryptonLabel();
+            dpEndDate = new KryptonDateTimePicker();
+            label5 = new KryptonLabel();
+            cmbLogClass = new KryptonComboBox();
+            label6 = new KryptonLabel();
+            cmbCourse = new KryptonComboBox();
+            lblExportTitle = new KryptonLabel();
+            panelButtons = new KryptonPanel();
+            BtnConfirmExport = new KryptonButton();
+            btnStartUse = new KryptonButton();
+            ((System.ComponentModel.ISupportInitialize)cmbTheme).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)panelLeft).BeginInit();
+            panelLeft.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)panelRight).BeginInit();
+            panelRight.SuspendLayout();
+            tabExport.SuspendLayout();
             studentsPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)cmbClass).BeginInit();
             teachingLogPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)cmbLogClass).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)cmbCourse).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)panelButtons).BeginInit();
+            panelButtons.SuspendLayout();
             SuspendLayout();
             // 
-            // btnImportExcel
+            // lblTheme
             // 
-            btnImportExcel.Location = new Point(21, 146);
-            btnImportExcel.Name = "btnImportExcel";
-            btnImportExcel.Size = new Size(245, 91);
-            btnImportExcel.TabIndex = 0;
-            btnImportExcel.Text = "导入excel数据";
-            btnImportExcel.UseVisualStyleBackColor = true;
-            btnImportExcel.Click += btnImportExcel_Click;
+            lblTheme.Location = new Point(404, 18);
+            lblTheme.Name = "lblTheme";
+            lblTheme.Size = new Size(51, 29);
+            lblTheme.TabIndex = 5;
+            lblTheme.Values.Text = "主题";
             // 
-            // btnCleanupDuplicates
+            // cmbTheme
             // 
-            btnCleanupDuplicates.Location = new Point(21, 260);
-            btnCleanupDuplicates.Name = "btnCleanupDuplicates";
-            btnCleanupDuplicates.Size = new Size(245, 80);
-            btnCleanupDuplicates.TabIndex = 6;
-            btnCleanupDuplicates.Text = "清理重复教学日志";
-            btnCleanupDuplicates.UseVisualStyleBackColor = true;
-            btnCleanupDuplicates.Click += btnCleanupDuplicates_Click;
+            cmbTheme.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbTheme.Location = new Point(461, 18);
+            cmbTheme.Name = "cmbTheme";
+            cmbTheme.Size = new Size(292, 30);
+            cmbTheme.TabIndex = 6;
+            // 
+            // panelLeft
+            // 
+            panelLeft.Controls.Add(lblImportTitle);
+            panelLeft.Controls.Add(btnDownloadTemplate);
+            panelLeft.Controls.Add(btnImportExcel);
+            panelLeft.Controls.Add(chkOverwrite);
+            panelLeft.Controls.Add(btnCleanupDuplicates);
+            panelLeft.Dock = DockStyle.Left;
+            panelLeft.Location = new Point(0, 0);
+            panelLeft.Name = "panelLeft";
+            panelLeft.Size = new Size(332, 600);
+            panelLeft.TabIndex = 0;
+            // 
+            // lblImportTitle
+            // 
+            lblImportTitle.Location = new Point(20, 16);
+            lblImportTitle.Name = "lblImportTitle";
+            lblImportTitle.Size = new Size(90, 29);
+            lblImportTitle.TabIndex = 0;
+            lblImportTitle.Values.Text = "数据导入";
             // 
             // btnDownloadTemplate
             // 
-            btnDownloadTemplate.Location = new Point(21, 32);
+            btnDownloadTemplate.Location = new Point(20, 58);
             btnDownloadTemplate.Name = "btnDownloadTemplate";
-            btnDownloadTemplate.Size = new Size(245, 91);
+            btnDownloadTemplate.Size = new Size(292, 72);
             btnDownloadTemplate.TabIndex = 1;
-            btnDownloadTemplate.Text = "下载导入模板";
-            btnDownloadTemplate.UseVisualStyleBackColor = true;
+            btnDownloadTemplate.Values.DropDownArrowColor = Color.Empty;
+            btnDownloadTemplate.Values.Text = "下载导入模板";
             btnDownloadTemplate.Click += btnDownloadTemplate_Click;
+            // 
+            // btnImportExcel
+            // 
+            btnImportExcel.Location = new Point(20, 142);
+            btnImportExcel.Name = "btnImportExcel";
+            btnImportExcel.Size = new Size(292, 72);
+            btnImportExcel.TabIndex = 2;
+            btnImportExcel.Values.DropDownArrowColor = Color.Empty;
+            btnImportExcel.Values.Text = "导入 Excel 数据";
+            btnImportExcel.Click += btnImportExcel_Click;
             // 
             // chkOverwrite
             // 
-            chkOverwrite.AutoSize = true;
-            chkOverwrite.Location = new Point(292, 178);
+            chkOverwrite.Location = new Point(22, 226);
             chkOverwrite.Name = "chkOverwrite";
-            chkOverwrite.Size = new Size(108, 28);
-            chkOverwrite.TabIndex = 2;
-            chkOverwrite.Text = "覆盖导入";
-            chkOverwrite.UseVisualStyleBackColor = true;
+            chkOverwrite.Size = new Size(109, 29);
+            chkOverwrite.TabIndex = 3;
+            chkOverwrite.Values.Text = "覆盖导入";
             // 
-            // BtnConfirmExport
+            // btnCleanupDuplicates
             // 
-            BtnConfirmExport.Location = new Point(437, 375);
-            BtnConfirmExport.Name = "BtnConfirmExport";
-            BtnConfirmExport.Size = new Size(301, 89);
-            BtnConfirmExport.TabIndex = 3;
-            BtnConfirmExport.Text = "确认导出";
-            BtnConfirmExport.UseVisualStyleBackColor = true;
-            BtnConfirmExport.Click += BtnConfirmExport_Click;
+            btnCleanupDuplicates.Location = new Point(20, 268);
+            btnCleanupDuplicates.Name = "btnCleanupDuplicates";
+            btnCleanupDuplicates.Size = new Size(292, 64);
+            btnCleanupDuplicates.TabIndex = 4;
+            btnCleanupDuplicates.Values.DropDownArrowColor = Color.Empty;
+            btnCleanupDuplicates.Values.Text = "清理重复教学日志";
+            btnCleanupDuplicates.Click += btnCleanupDuplicates_Click;
             // 
-            // tabControl1
+            // panelRight
             // 
-            tabControl1.Controls.Add(studentsPage);
-            tabControl1.Controls.Add(teachingLogPage);
-            tabControl1.Location = new Point(429, 32);
-            tabControl1.Name = "tabControl1";
-            tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(600, 326);
-            tabControl1.TabIndex = 4;
+            panelRight.Controls.Add(lblTheme);
+            panelRight.Controls.Add(tabExport);
+            panelRight.Controls.Add(cmbTheme);
+            panelRight.Controls.Add(lblExportTitle);
+            panelRight.Controls.Add(panelButtons);
+            panelRight.Dock = DockStyle.Fill;
+            panelRight.Location = new Point(332, 0);
+            panelRight.Name = "panelRight";
+            panelRight.Size = new Size(788, 600);
+            panelRight.TabIndex = 1;
+            // 
+            // tabExport
+            // 
+            tabExport.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tabExport.Controls.Add(studentsPage);
+            tabExport.Controls.Add(teachingLogPage);
+            tabExport.Location = new Point(20, 54);
+            tabExport.Name = "tabExport";
+            tabExport.SelectedIndex = 0;
+            tabExport.Size = new Size(748, 446);
+            tabExport.TabIndex = 1;
             // 
             // studentsPage
             // 
-            studentsPage.Controls.Add(label4);
             studentsPage.Controls.Add(label3);
-            studentsPage.Controls.Add(txtStudentKeyword);
             studentsPage.Controls.Add(cmbClass);
+            studentsPage.Controls.Add(label4);
+            studentsPage.Controls.Add(txtStudentKeyword);
             studentsPage.Location = new Point(4, 33);
             studentsPage.Name = "studentsPage";
             studentsPage.Padding = new Padding(3);
-            studentsPage.Size = new Size(592, 289);
+            studentsPage.Size = new Size(740, 409);
             studentsPage.TabIndex = 0;
             studentsPage.Text = "学生导出设置";
-            studentsPage.UseVisualStyleBackColor = true;
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Location = new Point(183, 99);
-            label4.Name = "label4";
-            label4.Size = new Size(126, 24);
-            label4.TabIndex = 3;
-            label4.Text = "搜索姓名/学号";
             // 
             // label3
             // 
-            label3.AutoSize = true;
-            label3.Location = new Point(227, 49);
+            label3.Location = new Point(24, 26);
             label3.Name = "label3";
-            label3.Size = new Size(82, 24);
-            label3.TabIndex = 2;
-            label3.Text = "选择班级";
-            // 
-            // txtStudentKeyword
-            // 
-            txtStudentKeyword.Location = new Point(326, 93);
-            txtStudentKeyword.Name = "txtStudentKeyword";
-            txtStudentKeyword.Size = new Size(237, 30);
-            txtStudentKeyword.TabIndex = 1;
+            label3.Size = new Size(90, 29);
+            label3.TabIndex = 0;
+            label3.Values.Text = "选择班级";
             // 
             // cmbClass
             // 
-            cmbClass.FormattingEnabled = true;
+            cmbClass.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            cmbClass.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbClass.Items.AddRange(new object[] { "全部" });
-            cmbClass.Location = new Point(326, 44);
+            cmbClass.Location = new Point(150, 22);
             cmbClass.Name = "cmbClass";
-            cmbClass.Size = new Size(237, 32);
-            cmbClass.TabIndex = 0;
-            cmbClass.Text = "全部";
+            cmbClass.Size = new Size(360, 30);
+            cmbClass.TabIndex = 1;
+            // 
+            // label4
+            // 
+            label4.Location = new Point(24, 76);
+            label4.Name = "label4";
+            label4.Size = new Size(136, 29);
+            label4.TabIndex = 2;
+            label4.Values.Text = "搜索姓名/学号";
+            // 
+            // txtStudentKeyword
+            // 
+            txtStudentKeyword.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            txtStudentKeyword.Location = new Point(150, 72);
+            txtStudentKeyword.Name = "txtStudentKeyword";
+            txtStudentKeyword.Size = new Size(360, 31);
+            txtStudentKeyword.TabIndex = 3;
             // 
             // teachingLogPage
             // 
-            teachingLogPage.Controls.Add(label6);
-            teachingLogPage.Controls.Add(label5);
-            teachingLogPage.Controls.Add(label2);
             teachingLogPage.Controls.Add(label1);
-            teachingLogPage.Controls.Add(cmbCourse);
-            teachingLogPage.Controls.Add(cmbLogClass);
-            teachingLogPage.Controls.Add(dpEndDate);
             teachingLogPage.Controls.Add(dpStartDate);
+            teachingLogPage.Controls.Add(label2);
+            teachingLogPage.Controls.Add(dpEndDate);
+            teachingLogPage.Controls.Add(label5);
+            teachingLogPage.Controls.Add(cmbLogClass);
+            teachingLogPage.Controls.Add(label6);
+            teachingLogPage.Controls.Add(cmbCourse);
             teachingLogPage.Location = new Point(4, 33);
             teachingLogPage.Name = "teachingLogPage";
             teachingLogPage.Padding = new Padding(3);
-            teachingLogPage.Size = new Size(592, 289);
+            teachingLogPage.Size = new Size(740, 409);
             teachingLogPage.TabIndex = 1;
             teachingLogPage.Text = "日志导出设置";
-            teachingLogPage.UseVisualStyleBackColor = true;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Location = new Point(223, 188);
-            label6.Name = "label6";
-            label6.Size = new Size(82, 24);
-            label6.TabIndex = 7;
-            label6.Text = "课程名称";
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new Point(277, 143);
-            label5.Name = "label5";
-            label5.Size = new Size(82, 24);
-            label5.TabIndex = 6;
-            label5.Text = "选择班级";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(223, 76);
-            label2.Name = "label2";
-            label2.Size = new Size(82, 24);
-            label2.TabIndex = 5;
-            label2.Text = "结束时间";
             // 
             // label1
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(223, 21);
+            label1.Location = new Point(24, 26);
             label1.Name = "label1";
-            label1.Size = new Size(82, 24);
-            label1.TabIndex = 4;
-            label1.Text = "开始时间";
-            // 
-            // cmbCourse
-            // 
-            cmbCourse.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbCourse.Items.AddRange(new object[] { "全部" });
-            cmbCourse.Location = new Point(388, 182);
-            cmbCourse.Name = "cmbCourse";
-            cmbCourse.Size = new Size(165, 32);
-            cmbCourse.TabIndex = 3;
-            // 
-            // cmbLogClass
-            // 
-            cmbLogClass.FormattingEnabled = true;
-            cmbLogClass.Items.AddRange(new object[] { "全部" });
-            cmbLogClass.Location = new Point(388, 140);
-            cmbLogClass.Name = "cmbLogClass";
-            cmbLogClass.Size = new Size(165, 32);
-            cmbLogClass.TabIndex = 2;
-            cmbLogClass.Text = "全部";
-            // 
-            // dpEndDate
-            // 
-            dpEndDate.Location = new Point(307, 71);
-            dpEndDate.Name = "dpEndDate";
-            dpEndDate.ShowCheckBox = true;
-            dpEndDate.Size = new Size(257, 30);
-            dpEndDate.TabIndex = 1;
-            dpEndDate.Value = new DateTime(2026, 9, 28, 0, 0, 0, 0);
+            label1.Size = new Size(90, 29);
+            label1.TabIndex = 0;
+            label1.Values.Text = "开始时间";
             // 
             // dpStartDate
             // 
+            dpStartDate.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             dpStartDate.Checked = false;
-            dpStartDate.Location = new Point(307, 17);
+            dpStartDate.Location = new Point(150, 22);
             dpStartDate.Name = "dpStartDate";
             dpStartDate.ShowCheckBox = true;
-            dpStartDate.Size = new Size(257, 30);
-            dpStartDate.TabIndex = 0;
+            dpStartDate.Size = new Size(360, 30);
+            dpStartDate.TabIndex = 1;
+            // 
+            // label2
+            // 
+            label2.Location = new Point(24, 72);
+            label2.Name = "label2";
+            label2.Size = new Size(90, 29);
+            label2.TabIndex = 2;
+            label2.Values.Text = "结束时间";
+            // 
+            // dpEndDate
+            // 
+            dpEndDate.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            dpEndDate.Location = new Point(150, 68);
+            dpEndDate.Name = "dpEndDate";
+            dpEndDate.ShowCheckBox = true;
+            dpEndDate.Size = new Size(360, 30);
+            dpEndDate.TabIndex = 3;
+            dpEndDate.ValueNullable = new DateTime(2026, 9, 28, 0, 0, 0, 0);
+            // 
+            // label5
+            // 
+            label5.Location = new Point(24, 118);
+            label5.Name = "label5";
+            label5.Size = new Size(90, 29);
+            label5.TabIndex = 4;
+            label5.Values.Text = "选择班级";
+            // 
+            // cmbLogClass
+            // 
+            cmbLogClass.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            cmbLogClass.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbLogClass.Items.AddRange(new object[] { "全部" });
+            cmbLogClass.Location = new Point(150, 114);
+            cmbLogClass.Name = "cmbLogClass";
+            cmbLogClass.Size = new Size(360, 30);
+            cmbLogClass.TabIndex = 5;
+            // 
+            // label6
+            // 
+            label6.Location = new Point(24, 164);
+            label6.Name = "label6";
+            label6.Size = new Size(90, 29);
+            label6.TabIndex = 6;
+            label6.Values.Text = "课程名称";
+            // 
+            // cmbCourse
+            // 
+            cmbCourse.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            cmbCourse.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbCourse.Items.AddRange(new object[] { "全部" });
+            cmbCourse.Location = new Point(150, 160);
+            cmbCourse.Name = "cmbCourse";
+            cmbCourse.Size = new Size(360, 30);
+            cmbCourse.TabIndex = 7;
+            // 
+            // lblExportTitle
+            // 
+            lblExportTitle.Location = new Point(20, 16);
+            lblExportTitle.Name = "lblExportTitle";
+            lblExportTitle.Size = new Size(90, 29);
+            lblExportTitle.TabIndex = 0;
+            lblExportTitle.Values.Text = "数据导出";
+            // 
+            // panelButtons
+            // 
+            panelButtons.Controls.Add(BtnConfirmExport);
+            panelButtons.Controls.Add(btnStartUse);
+            panelButtons.Dock = DockStyle.Bottom;
+            panelButtons.Location = new Point(0, 510);
+            panelButtons.Name = "panelButtons";
+            panelButtons.Size = new Size(788, 90);
+            panelButtons.TabIndex = 2;
+            // 
+            // BtnConfirmExport
+            // 
+            BtnConfirmExport.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            BtnConfirmExport.Location = new Point(20, 14);
+            BtnConfirmExport.Name = "BtnConfirmExport";
+            BtnConfirmExport.Size = new Size(350, 62);
+            BtnConfirmExport.TabIndex = 0;
+            BtnConfirmExport.Values.DropDownArrowColor = Color.Empty;
+            BtnConfirmExport.Values.Text = "确认导出";
+            BtnConfirmExport.Click += BtnConfirmExport_Click;
             // 
             // btnStartUse
             // 
-            btnStartUse.Location = new Point(759, 375);
+            btnStartUse.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            btnStartUse.Location = new Point(418, 14);
             btnStartUse.Name = "btnStartUse";
-            btnStartUse.Size = new Size(301, 89);
-            btnStartUse.TabIndex = 5;
-            btnStartUse.Text = "开始记分";
-            btnStartUse.UseVisualStyleBackColor = true;
+            btnStartUse.Size = new Size(350, 62);
+            btnStartUse.TabIndex = 1;
+            btnStartUse.Values.DropDownArrowColor = Color.Empty;
+            btnStartUse.Values.Text = "开始记分";
             btnStartUse.Click += btnStartUse_Click;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1105, 556);
-            Controls.Add(btnCleanupDuplicates);
-            Controls.Add(btnStartUse);
-            Controls.Add(tabControl1);
-            Controls.Add(BtnConfirmExport);
-            Controls.Add(chkOverwrite);
-            Controls.Add(btnDownloadTemplate);
-            Controls.Add(btnImportExcel);
+            ClientSize = new Size(1120, 600);
+            Controls.Add(panelRight);
+            Controls.Add(panelLeft);
+            FormTitleAlign = PaletteRelativeAlign.Center;
+            MinimumSize = new Size(980, 560);
             Name = "MainForm";
-            Text = "Form1";
+            Text = "数据导入导出";
             Load += MainForm_Load;
-            tabControl1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)cmbTheme).EndInit();
+            ((System.ComponentModel.ISupportInitialize)panelLeft).EndInit();
+            panelLeft.ResumeLayout(false);
+            panelLeft.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)panelRight).EndInit();
+            panelRight.ResumeLayout(false);
+            panelRight.PerformLayout();
+            tabExport.ResumeLayout(false);
             studentsPage.ResumeLayout(false);
             studentsPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)cmbClass).EndInit();
             teachingLogPage.ResumeLayout(false);
             teachingLogPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)cmbLogClass).EndInit();
+            ((System.ComponentModel.ISupportInitialize)cmbCourse).EndInit();
+            ((System.ComponentModel.ISupportInitialize)panelButtons).EndInit();
+            panelButtons.ResumeLayout(false);
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
-        private Button btnImportExcel;
-        private Button btnDownloadTemplate;
-        private CheckBox chkOverwrite;
-        private Button btnStartUse;
-        private Button btnCleanupDuplicates;
-        private TabControl tabControl1;
-        private TabPage teachingLogPage;
-        private Button BtnConfirmExport;
+        private KryptonLabel lblTheme;
+        private KryptonComboBox cmbTheme;
+        private KryptonPanel panelLeft;
+        private KryptonPanel panelRight;
+        private KryptonPanel panelButtons;
+        private KryptonLabel lblImportTitle;
+        private KryptonLabel lblExportTitle;
+        private KryptonButton btnImportExcel;
+        private KryptonButton btnDownloadTemplate;
+        private KryptonButton btnCleanupDuplicates;
+        private KryptonButton BtnConfirmExport;
+        private KryptonButton btnStartUse;
+        private KryptonCheckBox chkOverwrite;
+        private TabControl tabExport;
         private TabPage studentsPage;
-        private TextBox txtStudentKeyword;
-        private ComboBox cmbClass;
-        private ComboBox cmbCourse;
-        private ComboBox cmbLogClass;
-        private DateTimePicker dpEndDate;
-        private DateTimePicker dpStartDate;
-        private Label label2;
-        private Label label1;
-        private Label label4;
-        private Label label3;
-        private Label label6;
-        private Label label5;
+        private TabPage teachingLogPage;
+        private KryptonTextBox txtStudentKeyword;
+        private KryptonComboBox cmbClass;
+        private KryptonComboBox cmbCourse;
+        private KryptonComboBox cmbLogClass;
+        private KryptonDateTimePicker dpEndDate;
+        private KryptonDateTimePicker dpStartDate;
+        private KryptonLabel label1;
+        private KryptonLabel label2;
+        private KryptonLabel label3;
+        private KryptonLabel label4;
+        private KryptonLabel label5;
+        private KryptonLabel label6;
     }
 }

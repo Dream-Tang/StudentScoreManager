@@ -1,15 +1,17 @@
 ﻿
 
+
 using StudentScoreManager.Models;
 using StudentScoreManager.Services;
 using System.Data;
 using System.Threading.Tasks;
 using System.Drawing.Drawing2D;
 using Krypton.Toolkit;
+using System.Runtime.InteropServices;
 
 namespace StudentScoreManager.Forms
 {
-    public partial class Form1 : KryptonForm
+    public partial class Form1 : KryptonForm, System.Windows.Forms.IMessageFilter
     {
         private readonly DbHelper _db;
 
@@ -135,6 +137,11 @@ namespace StudentScoreManager.Forms
         public Form1()
         {
             InitializeComponent();
+
+            // 统一主题：对齐全局调色板；下一行随后绑定主题下拉框，支持运行期动态换肤。
+            // Form1 位于 StudentScoreManager.Forms，AppTheme 在父命名空间，故用全限定名。
+            // 主题已由 AppTheme 内唯一的全局 KryptonManager 实例统一管理，此处无需再单独设置主题
+            StudentScoreManager.AppTheme.BindCombo(cmbTheme); // 运行期动态换肤：绑定主题下拉框
             _db = new DbHelper(AppConfig.DbPath); // 统一配置，全程序共用同一数据库路径
         }
 
@@ -171,6 +178,7 @@ namespace StudentScoreManager.Forms
 
             // ===== 事件绑定（控件已在设计器声明，这里只做接线，符合设计器惯例）=====
             dtpDate.ValueChanged += DtpDate_ValueChanged;
+            EnableDateWheelScroll(); // 鼠标滚轮调节日期（作用在当前选中的年/月/日字段上）
             btnRefresh.Click += (s, e) => ReloadForCurrentCourse();
             btnMappingEditor.Click += (s, e) => OpenMappingEditor();
             btnPresent.Click += (s, e) => FillAllPresent();
@@ -263,6 +271,52 @@ namespace StudentScoreManager.Forms
         /// <summary>列存在则取原名，不存在则用常量列占位，保证后续 GetOrdinal 一定成功。</summary>
         private string LogCol(string col)
             => _logColumns.Contains(col) ? col : $"'' AS {col}";
+
+        // ==================================================================
+        // 授课日期鼠标滚轮调节
+        // 原生 DateTimePicker 本身不响应鼠标滚轮，但获焦后按上/下方向键会加减
+        // "当前高亮(被点击选中)的那一段(年/月/日)"。这里用消息过滤器拦截滚轮，
+        // 转发成一个方向键发给日期控件，让滚轮像键盘上下键一样调节当前段。
+        // ==================================================================
+        private const int WM_MOUSEWHEEL = 0x020A;
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_KEYUP = 0x0101;
+        private const int VK_UP = 0x28; // VK_UP：当前段 +1
+        private const int VK_DOWN = 0x26; // VK_DOWN：当前段 -1
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+
+        /// <summary>启用日期滚轮：注册全局消息过滤器；窗体关闭时移除，避免泄漏。</summary>
+        private void EnableDateWheelScroll()
+        {
+            System.Windows.Forms.Application.AddMessageFilter(this);
+            FormClosing += (s, e) => System.Windows.Forms.Application.RemoveMessageFilter(this);
+        }
+
+        /// <summary>
+        /// 全局消息过滤：当鼠标停在授课日期控件上滚动滚轮时，转发为一次"当前段 +1/-1"。
+        /// 不抢焦点，保留用户上一次点击选中的字段（年/月/日），改完仍会正常触发 ValueChanged 联动卡片。
+        /// </summary>
+        public bool PreFilterMessage(ref System.Windows.Forms.Message m)
+        {
+            if (m.Msg != WM_MOUSEWHEEL) return false;
+            if (dtpDate is null || !dtpDate.IsHandleCreated) return false;
+
+            // 命中判断：鼠标是否位于日期控件的屏幕矩形内
+            var rect = dtpDate.RectangleToScreen(dtpDate.ClientRectangle);
+            if (!rect.Contains(System.Windows.Forms.Cursor.Position)) return false;
+
+            // wParam 高 16 位为滚轮增量（有符号 short，±120 为一格）
+            int delta = (short)((m.WParam.ToInt64() >> 16) & 0xFFFF);
+            if (delta == 0) return false;
+
+            int vk = delta > 0 ? VK_UP : VK_DOWN;
+            IntPtr wParam = (IntPtr)vk;
+            SendMessage(dtpDate.Handle, WM_KEYDOWN, wParam, IntPtr.Zero);
+            SendMessage(dtpDate.Handle, WM_KEYUP, wParam, IntPtr.Zero);
+            return true; // 已消费该滚轮消息，避免其继续向上层容器冒泡引起无关滚动
+        }
 
         private void DtpDate_ValueChanged(object? sender, EventArgs e)
         {
