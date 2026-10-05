@@ -1,7 +1,9 @@
 ﻿
+
 // 文件路径: Services/ImportService.cs
 using Microsoft.Data.Sqlite;
 using MiniExcelLibs;
+using MiniExcelLibs.Attributes;
 using StudentScoreManager.Models;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -23,6 +25,26 @@ namespace StudentScoreManager.Services
     {
         // 数据访问层实例
         private readonly DbHelper _dbHelper;
+
+        /// <summary>
+        /// 成绩明细导入模型：对应导出「成绩明细」Sheet 的中文表头。
+        /// 明细编号(DetailID) 为自增主键，导入时忽略；
+        /// 关联日志ID / 学号 / 评分维度 作为定位外键，得分(Score) 为业务值。
+        /// </summary>
+        public class ScoreDetailImportModel
+        {
+            [ExcelColumn(Name = "关联日志ID")]
+            public int? LogID { get; set; }
+
+            [ExcelColumn(Name = "学号")]
+            public string? StudentID { get; set; }
+
+            [ExcelColumn(Name = "评分维度")]
+            public string? RuleName { get; set; }
+
+            [ExcelColumn(Name = "得分")]
+            public double? Score { get; set; }
+        }
 
         /// <summary>
         /// 初始化导入服务。
@@ -78,6 +100,17 @@ namespace StudentScoreManager.Services
                 return result;
             }
 
+            // 同步配套：读取「成绩明细」Sheet（上一轮导出改用中文表头后，导入侧读取同名 Sheet）。
+            // 兼容旧导出文件无该 Sheet 的情况——读取失败按“无明细数据”处理，不影响其余四表导入。
+            List<ScoreDetailImportModel> details;
+            try
+            {
+                details = MiniExcel.Query<ScoreDetailImportModel>(filePath, sheetName: "成绩明细").ToList();
+            }
+            catch (Exception)
+            {
+                details = new List<ScoreDetailImportModel>();
+            }
             // 3. 按外键依赖顺序逐表导入。
             var classIdMap = new Dictionary<string, int>();
 
@@ -106,6 +139,13 @@ namespace StudentScoreManager.Services
                 result.AddNotice($"[教学日志] 该表导入失败，已整体回滚（本次未写入任何数据）。失败原因：{ex.Message}");
             }
 
+            // 成绩明细最后导入：此时班级/学生/评分规则/教学日志均已入库，可按外键校验并写入。
+            try { ImportScoreDetails(details, result, overwriteExisting); }
+            catch (Exception ex)
+            {
+                result.HasRolledBack = true;
+                result.AddNotice($"[成绩明细] 该表导入失败，已整体回滚（本次未写入任何数据）。失败原因：{ex.Message}");
+            }
             // 4. 结果判定（P0-4）：只要没有真异常即成功——"跳过"不再否决提交。
             result.TotalSuccessCount = result.Inserted;
             result.IsSuccess = result.ErrorLogs.Count == 0 && !result.HasRolledBack;
@@ -687,6 +727,122 @@ namespace StudentScoreManager.Services
             }
         }
 
+        /// <summary>
+        /// 解析并导入成绩明细数据（表级事务）。
+        /// 对应导出「成绩明细」Sheet（中文表头：关联日志ID / 学号 / 评分维度 / 得分）。
+        /// 业务键 = 关联日志ID + 学号 + 评分维度：覆盖模式命中则更新得分，否则新增；非覆盖命中则跳过。
+        /// 明细编号(DetailID) 为自增主键，忽略不导入。
+        /// 因 SQLite 默认不强制外键，这里显式校验三个引用是否已存在，任一不存在即判定该行失败并计入回滚，避免写入孤儿明细。
+        /// </summary>
+        private void ImportScoreDetails(List<ScoreDetailImportModel> rows, ImportResult result, bool overwrite)
+        {
+            if (rows == null || rows.Count == 0) return;
+
+            using var conn = _dbHelper.CreateConnection();
+            conn.Open();
+            using var trans = conn.BeginTransaction();
+
+            int rowIndex = 2;
+            int inserted = 0;
+            int updated = 0;
+            int failed = 0;
+            var skipped = new List<string>();
+
+            try
+            {
+                foreach (var row in rows)
+                {
+                    int logId = 0;
+                    string studentId = string.Empty;
+                    string ruleName = string.Empty;
+                    try
+                    {
+                        studentId = row.StudentID?.ToString()?.Trim() ?? string.Empty;
+                        ruleName = row.RuleName?.ToString()?.Trim() ?? string.Empty;
+                        logId = row.LogID ?? 0;
+
+                        // 表头行 / 空行跳过
+                        if (studentId == "学号" || ruleName == "评分维度") { rowIndex++; continue; }
+                        if (logId <= 0 && string.IsNullOrWhiteSpace(studentId) && string.IsNullOrWhiteSpace(ruleName))
+                        { rowIndex++; continue; }
+
+                        if (logId <= 0) throw new Exception("关联日志ID不能为空或非法");
+                        if (string.IsNullOrWhiteSpace(studentId)) throw new Exception("学号不能为空");
+                        if (string.IsNullOrWhiteSpace(ruleName)) throw new Exception("评分维度不能为空");
+                        if (!row.Score.HasValue) throw new Exception("得分不能为空");
+
+                        // 外键引用存在性校验（SQLite 默认不强制外键，这里主动兜底，避免孤儿明细）
+                        var logOk = _dbHelper.ExecuteScalar<int?>(
+                            "SELECT 1 FROM TeachingLogs WHERE LogID = @LogID",
+                            new { LogID = logId }, conn, trans);
+                        if (!logOk.HasValue) throw new Exception($"关联日志ID '{logId}' 在教学日志中不存在");
+
+                        var stuOk = _dbHelper.ExecuteScalar<int?>(
+                            "SELECT 1 FROM Students WHERE StudentID = @StudentID",
+                            new { StudentID = studentId }, conn, trans);
+                        if (!stuOk.HasValue) throw new Exception($"学号 '{studentId}' 在学生信息中不存在");
+
+                        var ruleOk = _dbHelper.ExecuteScalar<string>(
+                            "SELECT RuleName FROM ScoringRules WHERE TRIM(RuleName) = @RuleName",
+                            new { RuleName = ruleName }, conn, trans);
+                        if (string.IsNullOrEmpty(ruleOk)) throw new Exception($"评分维度 '{ruleName}' 在评分规则中不存在");
+
+                        var existing = _dbHelper.ExecuteScalar<int?>(
+                            @"SELECT 1 FROM ScoreDetails WHERE LogID = @LogID AND StudentID = @StudentID AND RuleName = @RuleName",
+                            new { LogID = logId, StudentID = studentId, RuleName = ruleOk }, conn, trans);
+
+                        if (existing.HasValue)
+                        {
+                            if (overwrite)
+                            {
+                                _dbHelper.ExecuteNonQuery(
+                                    @"UPDATE ScoreDetails SET Score = @Score
+                                      WHERE LogID = @LogID AND StudentID = @StudentID AND RuleName = @RuleName",
+                                    new { LogID = logId, StudentID = studentId, RuleName = ruleOk, Score = row.Score.Value }, conn, trans);
+                                updated++;
+                            }
+                            else
+                            {
+                                skipped.Add($"[成绩明细] 第 {rowIndex} 行：日志「{logId}」学号「{studentId}」维度「{ruleName}」 已存在，跳过导入。");
+                            }
+                        }
+                        else
+                        {
+                            _dbHelper.ExecuteNonQuery(
+                                @"INSERT INTO ScoreDetails (LogID, StudentID, RuleName, Score)
+                                  VALUES (@LogID, @StudentID, @RuleName, @Score)",
+                                new { LogID = logId, StudentID = studentId, RuleName = ruleOk, Score = row.Score.Value }, conn, trans);
+                            inserted++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        result.AddError($"[成绩明细] 第 {rowIndex} 行（关联日志「{logId}」 学号「{studentId}」 维度「{ruleName}」）导入失败：{ex.Message}");
+                        failed++;
+                    }
+                    finally
+                    {
+                        rowIndex++;
+                    }
+                }
+
+                // 循环结束后统一判定：有任一失败 -> 整表回滚；全部通过 -> 提交。
+                if (failed > 0)
+                {
+                    throw new Exception($"共 {failed} 行数据校验或写入失败，本表已整体回滚（本次未写入任何数据）。");
+                }
+
+                trans.Commit();
+                result.Inserted += inserted;
+                result.Updated += updated;
+                foreach (var s in skipped) result.AddSkipped(s);
+            }
+            catch
+            {
+                try { trans.Rollback(); } catch { }
+                throw;
+            }
+        }
         #endregion
     }
 }

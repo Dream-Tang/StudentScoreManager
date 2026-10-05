@@ -43,7 +43,6 @@ namespace StudentScoreManager
 
                 // 4. 从数据库动态加载班级下拉（学生导出/日志导出两个筛选框），随数据变化自动更新
                 PopulateClassFilter(cmbClass);
-                PopulateClassFilter(cmbLogClass);
                 PopulateCourseFilter(cmbCourse);
 
                 //MessageBox.Show("系统初始化完成，数据库已就绪。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -141,7 +140,6 @@ namespace StudentScoreManager
                 {
                     // 0. 导出前刷新班级下拉，动态适配本次运行中新导入的班级
                     PopulateClassFilter(cmbClass);
-                    PopulateClassFilter(cmbLogClass);
                     PopulateCourseFilter(cmbCourse);
 
                     // 1. 从 UI 控件收集筛选条件
@@ -154,9 +152,18 @@ namespace StudentScoreManager
                     // 处理"全部"的情况
                     if (studentFilter.ClassName == "全部") studentFilter.ClassName = null;
 
+                    // 起止日期约束：两个日期都勾选启用时，开始日期必须早于或等于结束日期，否则筛选区间无意义。
+                    if (dpStartDate.Checked && dpEndDate.Checked && dpStartDate.Value.Date > dpEndDate.Value.Date)
+                    {
+                        MessageBox.Show("开始日期不能晚于结束日期，请调整后重试。", "筛选条件有误",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    // 打勾(Checked)才把该日期纳入筛选；未勾则该方向不设边界（不限起始/不限结束）。
                     var logFilter = new TeachingLogExportFilter
                     {
-                        ClassName = cmbLogClass.SelectedItem?.ToString(),
+                        ClassName = cmbClass.SelectedItem?.ToString(),
                         CourseName = cmbCourse.SelectedItem?.ToString(),
                         StartDate = dpStartDate.Checked ? dpStartDate.Value : (DateTime?)null,
                         EndDate = dpEndDate.Checked ? dpEndDate.Value : (DateTime?)null
@@ -164,6 +171,11 @@ namespace StudentScoreManager
 
                     if (logFilter.ClassName == "全部") logFilter.ClassName = null;
                     if (logFilter.CourseName == "全部") logFilter.CourseName = null;
+
+                    // 班级筛选：与其它筛选一致地做"全部"归一化后构造 ClassExportFilter 对象。
+                    // 班级表 GetClassData 按 Keyword 对 班级名/辅导员 做 LIKE 匹配，传入选中班级名即可命中该班。
+                    var classFilter = new ClassExportFilter { Keyword = cmbClass.SelectedItem?.ToString() };
+                    if (classFilter.Keyword == "全部") classFilter.Keyword = null;
 
                     // 2. 调用服务
                     var exportService = new ExportService(_dbHelper);
@@ -173,9 +185,10 @@ namespace StudentScoreManager
 
                     bool success = exportService.ExportAllToExcel(
                         saveFileDialog.FileName,
-                        classFilter: null, // 班级暂时不筛选
+                        classFilter: classFilter, // 班级同时作用于班级/学生/日志筛选
                         studentFilter: studentFilter,
-                        logFilter: logFilter
+                        logFilter: logFilter,
+                        exportScoreDetails: chkExportDetails.Checked // 成绩明细数据量大，由界面开关决定是否导出该 Sheet
                     );
 
                     if (success)

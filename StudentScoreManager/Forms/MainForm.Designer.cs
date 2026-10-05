@@ -1,5 +1,4 @@
 ﻿
-
 using Krypton.Toolkit;
 
 namespace StudentScoreManager
@@ -12,9 +11,8 @@ namespace StudentScoreManager
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        ///  Clean up any resources being used.
+        ///  Clean up any resources.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -26,10 +24,6 @@ namespace StudentScoreManager
 
         #region Windows Form Designer generated code
 
-        /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             lblTheme = new KryptonLabel();
@@ -41,21 +35,22 @@ namespace StudentScoreManager
             chkOverwrite = new KryptonCheckBox();
             btnCleanupDuplicates = new KryptonButton();
             panelRight = new KryptonPanel();
-            tabExport = new TabControl();
-            studentsPage = new TabPage();
+            panelFilter = new KryptonPanel();
+            lblSecStudent = new KryptonLabel();
+            sepStudent = new KryptonSeparator();
             label3 = new KryptonLabel();
             cmbClass = new KryptonComboBox();
             label4 = new KryptonLabel();
             txtStudentKeyword = new KryptonTextBox();
-            teachingLogPage = new TabPage();
             label1 = new KryptonLabel();
             dpStartDate = new KryptonDateTimePicker();
             label2 = new KryptonLabel();
             dpEndDate = new KryptonDateTimePicker();
-            label5 = new KryptonLabel();
-            cmbLogClass = new KryptonComboBox();
             label6 = new KryptonLabel();
             cmbCourse = new KryptonComboBox();
+            lblSecOption = new KryptonLabel();
+            sepOption = new KryptonSeparator();
+            chkExportDetails = new KryptonCheckBox();
             lblExportTitle = new KryptonLabel();
             panelButtons = new KryptonPanel();
             BtnConfirmExport = new KryptonButton();
@@ -65,19 +60,19 @@ namespace StudentScoreManager
             panelLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)panelRight).BeginInit();
             panelRight.SuspendLayout();
-            tabExport.SuspendLayout();
-            studentsPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)panelFilter).BeginInit();
+            panelFilter.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)sepStudent).BeginInit();
             ((System.ComponentModel.ISupportInitialize)cmbClass).BeginInit();
-            teachingLogPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)cmbLogClass).BeginInit();
             ((System.ComponentModel.ISupportInitialize)cmbCourse).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)sepOption).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelButtons).BeginInit();
             panelButtons.SuspendLayout();
             SuspendLayout();
             // 
             // lblTheme
             // 
-            lblTheme.Location = new Point(404, 18);
+            lblTheme.Location = new Point(20, 356);
             lblTheme.Name = "lblTheme";
             lblTheme.Size = new Size(51, 29);
             lblTheme.TabIndex = 5;
@@ -86,13 +81,15 @@ namespace StudentScoreManager
             // cmbTheme
             // 
             cmbTheme.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbTheme.Location = new Point(461, 18);
+            cmbTheme.Location = new Point(20, 388);
             cmbTheme.Name = "cmbTheme";
             cmbTheme.Size = new Size(292, 30);
             cmbTheme.TabIndex = 6;
             // 
             // panelLeft
             // 
+            panelLeft.Controls.Add(lblTheme);
+            panelLeft.Controls.Add(cmbTheme);
             panelLeft.Controls.Add(lblImportTitle);
             panelLeft.Controls.Add(btnDownloadTemplate);
             panelLeft.Controls.Add(btnImportExcel);
@@ -152,9 +149,7 @@ namespace StudentScoreManager
             // 
             // panelRight
             // 
-            panelRight.Controls.Add(lblTheme);
-            panelRight.Controls.Add(tabExport);
-            panelRight.Controls.Add(cmbTheme);
+            panelRight.Controls.Add(panelFilter);
             panelRight.Controls.Add(lblExportTitle);
             panelRight.Controls.Add(panelButtons);
             panelRight.Dock = DockStyle.Fill;
@@ -163,36 +158,51 @@ namespace StudentScoreManager
             panelRight.Size = new Size(788, 600);
             panelRight.TabIndex = 1;
             // 
-            // tabExport
+            // panelFilter
             // 
-            tabExport.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            tabExport.Controls.Add(studentsPage);
-            tabExport.Controls.Add(teachingLogPage);
-            tabExport.Location = new Point(20, 54);
-            tabExport.Name = "tabExport";
-            tabExport.SelectedIndex = 0;
-            tabExport.Size = new Size(748, 446);
-            tabExport.TabIndex = 1;
+            panelFilter.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelFilter.Controls.Add(lblSecStudent);
+            panelFilter.Controls.Add(sepStudent);
+            panelFilter.Controls.Add(label3);
+            panelFilter.Controls.Add(cmbClass);
+            panelFilter.Controls.Add(label4);
+            panelFilter.Controls.Add(txtStudentKeyword);
+            panelFilter.Controls.Add(label1);
+            panelFilter.Controls.Add(dpStartDate);
+            panelFilter.Controls.Add(label2);
+            panelFilter.Controls.Add(dpEndDate);
+            panelFilter.Controls.Add(label6);
+            panelFilter.Controls.Add(cmbCourse);
+            panelFilter.Controls.Add(lblSecOption);
+            panelFilter.Controls.Add(sepOption);
+            panelFilter.Controls.Add(chkExportDetails);
+            panelFilter.Location = new Point(20, 54);
+            panelFilter.Name = "panelFilter";
+            panelFilter.Size = new Size(748, 446);
+            panelFilter.TabIndex = 1;
             // 
-            // studentsPage
+            // lblSecStudent
             // 
-            studentsPage.Controls.Add(label3);
-            studentsPage.Controls.Add(cmbClass);
-            studentsPage.Controls.Add(label4);
-            studentsPage.Controls.Add(txtStudentKeyword);
-            studentsPage.Location = new Point(4, 33);
-            studentsPage.Name = "studentsPage";
-            studentsPage.Padding = new Padding(3);
-            studentsPage.Size = new Size(740, 409);
-            studentsPage.TabIndex = 0;
-            studentsPage.Text = "学生导出设置";
+            lblSecStudent.Location = new Point(10, 4);
+            lblSecStudent.Name = "lblSecStudent";
+            lblSecStudent.Size = new Size(168, 29);
+            lblSecStudent.TabIndex = 0;
+            lblSecStudent.Values.Text = "按照筛选导出数据";
+            // 
+            // sepStudent
+            // 
+            sepStudent.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            sepStudent.Location = new Point(10, 36);
+            sepStudent.Name = "sepStudent";
+            sepStudent.Size = new Size(720, 4);
+            sepStudent.TabIndex = 1;
             // 
             // label3
             // 
-            label3.Location = new Point(24, 26);
+            label3.Location = new Point(24, 138);
             label3.Name = "label3";
             label3.Size = new Size(90, 29);
-            label3.TabIndex = 0;
+            label3.TabIndex = 2;
             label3.Values.Text = "选择班级";
             // 
             // cmbClass
@@ -200,104 +210,69 @@ namespace StudentScoreManager
             cmbClass.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             cmbClass.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbClass.Items.AddRange(new object[] { "全部" });
-            cmbClass.Location = new Point(150, 22);
+            cmbClass.Location = new Point(160, 134);
             cmbClass.Name = "cmbClass";
-            cmbClass.Size = new Size(360, 30);
-            cmbClass.TabIndex = 1;
+            cmbClass.Size = new Size(440, 30);
+            cmbClass.TabIndex = 3;
             // 
             // label4
             // 
-            label4.Location = new Point(24, 76);
+            label4.Location = new Point(24, 74);
             label4.Name = "label4";
             label4.Size = new Size(136, 29);
-            label4.TabIndex = 2;
+            label4.TabIndex = 4;
             label4.Values.Text = "搜索姓名/学号";
             // 
             // txtStudentKeyword
             // 
             txtStudentKeyword.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            txtStudentKeyword.Location = new Point(150, 72);
+            txtStudentKeyword.Location = new Point(160, 70);
             txtStudentKeyword.Name = "txtStudentKeyword";
-            txtStudentKeyword.Size = new Size(360, 31);
-            txtStudentKeyword.TabIndex = 3;
-            // 
-            // teachingLogPage
-            // 
-            teachingLogPage.Controls.Add(label1);
-            teachingLogPage.Controls.Add(dpStartDate);
-            teachingLogPage.Controls.Add(label2);
-            teachingLogPage.Controls.Add(dpEndDate);
-            teachingLogPage.Controls.Add(label5);
-            teachingLogPage.Controls.Add(cmbLogClass);
-            teachingLogPage.Controls.Add(label6);
-            teachingLogPage.Controls.Add(cmbCourse);
-            teachingLogPage.Location = new Point(4, 33);
-            teachingLogPage.Name = "teachingLogPage";
-            teachingLogPage.Padding = new Padding(3);
-            teachingLogPage.Size = new Size(740, 409);
-            teachingLogPage.TabIndex = 1;
-            teachingLogPage.Text = "日志导出设置";
+            txtStudentKeyword.Size = new Size(440, 31);
+            txtStudentKeyword.TabIndex = 5;
             // 
             // label1
             // 
-            label1.Location = new Point(24, 26);
+            label1.Location = new Point(24, 174);
             label1.Name = "label1";
             label1.Size = new Size(90, 29);
-            label1.TabIndex = 0;
+            label1.TabIndex = 8;
             label1.Values.Text = "开始时间";
             // 
             // dpStartDate
             // 
             dpStartDate.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             dpStartDate.Checked = false;
-            dpStartDate.Location = new Point(150, 22);
+            dpStartDate.Location = new Point(160, 170);
             dpStartDate.Name = "dpStartDate";
             dpStartDate.ShowCheckBox = true;
-            dpStartDate.Size = new Size(360, 30);
-            dpStartDate.TabIndex = 1;
+            dpStartDate.Size = new Size(440, 30);
+            dpStartDate.TabIndex = 9;
             // 
             // label2
             // 
-            label2.Location = new Point(24, 72);
+            label2.Location = new Point(24, 210);
             label2.Name = "label2";
             label2.Size = new Size(90, 29);
-            label2.TabIndex = 2;
+            label2.TabIndex = 10;
             label2.Values.Text = "结束时间";
             // 
             // dpEndDate
             // 
             dpEndDate.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            dpEndDate.Location = new Point(150, 68);
+            dpEndDate.Location = new Point(160, 206);
             dpEndDate.Name = "dpEndDate";
             dpEndDate.ShowCheckBox = true;
-            dpEndDate.Size = new Size(360, 30);
-            dpEndDate.TabIndex = 3;
+            dpEndDate.Size = new Size(440, 30);
+            dpEndDate.TabIndex = 11;
             dpEndDate.ValueNullable = new DateTime(2026, 9, 28, 0, 0, 0, 0);
-            // 
-            // label5
-            // 
-            label5.Location = new Point(24, 118);
-            label5.Name = "label5";
-            label5.Size = new Size(90, 29);
-            label5.TabIndex = 4;
-            label5.Values.Text = "选择班级";
-            // 
-            // cmbLogClass
-            // 
-            cmbLogClass.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            cmbLogClass.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbLogClass.Items.AddRange(new object[] { "全部" });
-            cmbLogClass.Location = new Point(150, 114);
-            cmbLogClass.Name = "cmbLogClass";
-            cmbLogClass.Size = new Size(360, 30);
-            cmbLogClass.TabIndex = 5;
             // 
             // label6
             // 
-            label6.Location = new Point(24, 164);
+            label6.Location = new Point(24, 246);
             label6.Name = "label6";
             label6.Size = new Size(90, 29);
-            label6.TabIndex = 6;
+            label6.TabIndex = 14;
             label6.Values.Text = "课程名称";
             // 
             // cmbCourse
@@ -305,10 +280,36 @@ namespace StudentScoreManager
             cmbCourse.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             cmbCourse.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbCourse.Items.AddRange(new object[] { "全部" });
-            cmbCourse.Location = new Point(150, 160);
+            cmbCourse.Location = new Point(160, 242);
             cmbCourse.Name = "cmbCourse";
-            cmbCourse.Size = new Size(360, 30);
-            cmbCourse.TabIndex = 7;
+            cmbCourse.Size = new Size(440, 30);
+            cmbCourse.TabIndex = 15;
+            // 
+            // lblSecOption
+            // 
+            lblSecOption.Location = new Point(10, 322);
+            lblSecOption.Name = "lblSecOption";
+            lblSecOption.Size = new Size(90, 29);
+            lblSecOption.TabIndex = 16;
+            lblSecOption.Values.Text = "导出选项";
+            // 
+            // sepOption
+            // 
+            sepOption.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            sepOption.Location = new Point(10, 318);
+            sepOption.Name = "sepOption";
+            sepOption.Size = new Size(720, 4);
+            sepOption.TabIndex = 17;
+            // 
+            // chkExportDetails
+            // 
+            chkExportDetails.Checked = true;
+            chkExportDetails.CheckState = CheckState.Checked;
+            chkExportDetails.Location = new Point(122, 344);
+            chkExportDetails.Name = "chkExportDetails";
+            chkExportDetails.Size = new Size(478, 29);
+            chkExportDetails.TabIndex = 18;
+            chkExportDetails.Values.Text = "导出满足筛选的成绩明细（数据量大，可按需关闭）";
             // 
             // lblExportTitle
             // 
@@ -369,14 +370,13 @@ namespace StudentScoreManager
             ((System.ComponentModel.ISupportInitialize)panelRight).EndInit();
             panelRight.ResumeLayout(false);
             panelRight.PerformLayout();
-            tabExport.ResumeLayout(false);
-            studentsPage.ResumeLayout(false);
-            studentsPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)panelFilter).EndInit();
+            panelFilter.ResumeLayout(false);
+            panelFilter.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)sepStudent).EndInit();
             ((System.ComponentModel.ISupportInitialize)cmbClass).EndInit();
-            teachingLogPage.ResumeLayout(false);
-            teachingLogPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)cmbLogClass).EndInit();
             ((System.ComponentModel.ISupportInitialize)cmbCourse).EndInit();
+            ((System.ComponentModel.ISupportInitialize)sepOption).EndInit();
             ((System.ComponentModel.ISupportInitialize)panelButtons).EndInit();
             panelButtons.ResumeLayout(false);
             ResumeLayout(false);
@@ -388,6 +388,7 @@ namespace StudentScoreManager
         private KryptonComboBox cmbTheme;
         private KryptonPanel panelLeft;
         private KryptonPanel panelRight;
+        private KryptonPanel panelFilter;
         private KryptonPanel panelButtons;
         private KryptonLabel lblImportTitle;
         private KryptonLabel lblExportTitle;
@@ -397,20 +398,20 @@ namespace StudentScoreManager
         private KryptonButton BtnConfirmExport;
         private KryptonButton btnStartUse;
         private KryptonCheckBox chkOverwrite;
-        private TabControl tabExport;
-        private TabPage studentsPage;
-        private TabPage teachingLogPage;
+        private KryptonCheckBox chkExportDetails;
         private KryptonTextBox txtStudentKeyword;
         private KryptonComboBox cmbClass;
         private KryptonComboBox cmbCourse;
-        private KryptonComboBox cmbLogClass;
         private KryptonDateTimePicker dpEndDate;
         private KryptonDateTimePicker dpStartDate;
         private KryptonLabel label1;
         private KryptonLabel label2;
         private KryptonLabel label3;
         private KryptonLabel label4;
-        private KryptonLabel label5;
         private KryptonLabel label6;
+        private KryptonLabel lblSecStudent;
+        private KryptonLabel lblSecOption;
+        private KryptonSeparator sepStudent;
+        private KryptonSeparator sepOption;
     }
 }
