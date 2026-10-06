@@ -37,7 +37,6 @@ namespace StudentScoreManager
             panelRight = new KryptonPanel();
             panelFilter = new KryptonPanel();
             lblSecStudent = new KryptonLabel();
-            sepStudent = new KryptonSeparator();
             label3 = new KryptonLabel();
             cmbClass = new KryptonComboBox();
             label4 = new KryptonLabel();
@@ -49,12 +48,13 @@ namespace StudentScoreManager
             label6 = new KryptonLabel();
             cmbCourse = new KryptonComboBox();
             lblSecOption = new KryptonLabel();
-            sepOption = new KryptonSeparator();
             chkExportDetails = new KryptonCheckBox();
             lblExportTitle = new KryptonLabel();
             panelButtons = new KryptonPanel();
             BtnConfirmExport = new KryptonButton();
             btnStartUse = new KryptonButton();
+            sepOption = new KryptonSeparator();
+            sepStudent = new KryptonSeparator();
             ((System.ComponentModel.ISupportInitialize)cmbTheme).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelLeft).BeginInit();
             panelLeft.SuspendLayout();
@@ -62,12 +62,12 @@ namespace StudentScoreManager
             panelRight.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)panelFilter).BeginInit();
             panelFilter.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)sepStudent).BeginInit();
             ((System.ComponentModel.ISupportInitialize)cmbClass).BeginInit();
             ((System.ComponentModel.ISupportInitialize)cmbCourse).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)sepOption).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelButtons).BeginInit();
             panelButtons.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)sepOption).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)sepStudent).BeginInit();
             SuspendLayout();
             // 
             // lblTheme
@@ -189,14 +189,6 @@ namespace StudentScoreManager
             lblSecStudent.TabIndex = 0;
             lblSecStudent.Values.Text = "按照筛选导出数据";
             // 
-            // sepStudent
-            // 
-            sepStudent.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            sepStudent.Location = new Point(10, 36);
-            sepStudent.Name = "sepStudent";
-            sepStudent.Size = new Size(720, 4);
-            sepStudent.TabIndex = 1;
-            // 
             // label3
             // 
             label3.Location = new Point(24, 138);
@@ -293,14 +285,6 @@ namespace StudentScoreManager
             lblSecOption.TabIndex = 16;
             lblSecOption.Values.Text = "导出选项";
             // 
-            // sepOption
-            // 
-            sepOption.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            sepOption.Location = new Point(10, 318);
-            sepOption.Name = "sepOption";
-            sepOption.Size = new Size(720, 4);
-            sepOption.TabIndex = 17;
-            // 
             // chkExportDetails
             // 
             chkExportDetails.Checked = true;
@@ -351,6 +335,25 @@ namespace StudentScoreManager
             btnStartUse.Values.Text = "开始记分";
             btnStartUse.Click += btnStartUse_Click;
             // 
+            // sepOption
+            // 
+            sepOption.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            sepOption.Location = new Point(10, 318);
+            sepOption.Name = "sepOption";
+            sepOption.Size = new Size(720, 4);
+            sepOption.TabIndex = 17;
+            sepOption.TabStop = false;
+            // 
+            // sepStudent
+            // 
+            sepStudent.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            sepStudent.Location = new Point(10, 36);
+            sepStudent.Name = "sepStudent";
+            sepStudent.Size = new Size(720, 4);
+            sepStudent.TabIndex = 1;
+            sepStudent.TabStop = false;
+            sepStudent.ToolTipValues.EnableToolTips = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
@@ -358,10 +361,9 @@ namespace StudentScoreManager
             ClientSize = new Size(1120, 600);
             Controls.Add(panelRight);
             Controls.Add(panelLeft);
-            FormTitleAlign = PaletteRelativeAlign.Center;
             MinimumSize = new Size(980, 560);
             Name = "MainForm";
-            Text = "数据导入导出";
+            Text = "数据导入导出（联系作者：tangjun2079@163.com）";
             Load += MainForm_Load;
             ((System.ComponentModel.ISupportInitialize)cmbTheme).EndInit();
             ((System.ComponentModel.ISupportInitialize)panelLeft).EndInit();
@@ -373,12 +375,12 @@ namespace StudentScoreManager
             ((System.ComponentModel.ISupportInitialize)panelFilter).EndInit();
             panelFilter.ResumeLayout(false);
             panelFilter.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)sepStudent).EndInit();
             ((System.ComponentModel.ISupportInitialize)cmbClass).EndInit();
             ((System.ComponentModel.ISupportInitialize)cmbCourse).EndInit();
-            ((System.ComponentModel.ISupportInitialize)sepOption).EndInit();
             ((System.ComponentModel.ISupportInitialize)panelButtons).EndInit();
             panelButtons.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)sepOption).EndInit();
+            ((System.ComponentModel.ISupportInitialize)sepStudent).EndInit();
             ResumeLayout(false);
         }
 

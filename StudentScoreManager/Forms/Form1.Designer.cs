@@ -259,7 +259,7 @@ namespace StudentScoreManager.Forms
             MinimumSize = new Size(1080, 700);
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "课堂评分";
+            Text = "课堂评分（联系作者：tangjun2079@163.com）";
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)cmbTheme).EndInit();
             ((System.ComponentModel.ISupportInitialize)pnlTop).EndInit();
